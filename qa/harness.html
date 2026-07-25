@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gmail Recipient Preview QA</title>
+    <link rel="stylesheet" href="../content.css" />
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: #f4f6f8; font-family: Arial, sans-serif; }
+      .fake-gmail { height: 64px; padding: 18px 28px; background: #fff; border-bottom: 1px solid #e4e7e9; color: #53616a; font-weight: 700; }
+      [role="dialog"] { position: fixed; right: 38px; bottom: 0; width: 560px; height: 520px; background: white; border-radius: 10px 10px 0 0; box-shadow: 0 8px 35px rgba(0,0,0,.2); overflow: hidden; }
+      .compose-title { padding: 12px 16px; background: #eef2f4; color: #39464e; font-size: 13px; }
+      input { width: 100%; height: 46px; padding: 0 16px; border: 0; border-bottom: 1px solid #e6e9eb; font: 14px Arial; }
+      [contenteditable] { min-height: 350px; padding: 16px; outline: 0; font: 14px/1.5 Arial; }
+      .send { position: absolute; left: 16px; bottom: 12px; padding: 9px 20px; border: 0; border-radius: 18px; background: #0b57d0; color: white; }
+      .compose-toolbar { position: absolute; left: 104px; bottom: 12px; height: 36px; display: flex; align-items: center; gap: 3px; }
+      .native-icon { width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: #444746; font-size: 18px; }
+      .discard { position: absolute; right: 16px; bottom: 12px; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: #444746; }
+      .discard svg { width: 20px; height: 20px; }
+    </style>
+  </head>
+  <body>
+    <div class="fake-gmail">Gmail Recipient Preview · QA harness</div>
+    <section role="dialog" aria-label="New Message">
+      <div class="compose-title">New Message</div>
+      <input name="subjectbox" value="A thoughtful follow-up after our conversation" aria-label="Subject" />
+      <div contenteditable="true" role="textbox" aria-label="Message Body">
+        Hi Maya,<br><br>
+        Thank you again for taking the time to speak with me today. I especially appreciated your perspective on making complex work feel simple for customers.<br><br>
+        <strong>Here are the two next steps we discussed:</strong>
+        <ul><li>I’ll share the draft brief by Tuesday.</li><li>We’ll reconnect after your team reviews it.</li></ul>
+        <img src="./fixtures/inline-image.svg" width="640" alt="Quarterly project overview with three milestones"><br><br>
+        The attached overview summarizes the milestones, current ownership, and the decisions we still need to make. Please review the highlighted section before our next conversation.<br><br>
+        For additional context, the first phase focuses on validating the recipient experience across common mobile devices. The second phase covers formatting-risk detection and accessibility checks.<br><br>
+        Once those items are complete, we can compare the preview against test messages opened on physical iOS and Android devices and record any meaningful differences.<br><br>
+        Looking forward to continuing the conversation.<br><br>
+        Best,<br>Andre
+      </div>
+      <button class="send" aria-label="Send">Send</button>
+      <div class="compose-toolbar" aria-label="Compose actions">
+        <button class="native-icon" command="+attachFiles" aria-label="Attach files">⌕</button>
+        <button class="native-icon" command="+link" aria-label="Insert link">⌁</button>
+        <button class="native-icon" command="+emoticon" aria-label="Insert emoji">☺</button>
+        <button class="native-icon" command="+insertFromDrive" aria-label="Insert from Drive">△</button>
+        <button class="native-icon" command="+insertImage" aria-label="Insert photo">▧</button>
+        <button class="native-icon" command="+signature" aria-label="Insert signature">✎</button>
+      </div>
+      <button class="discard" role="button" aria-label="Discard draft"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14m-9-3h4l1 3H9l1-3Zm-3 3 1 13h8l1-13M10 10v7m4-7v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </section>
+    <script src="../content.js"></script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+.DS_Store
+
+# Generated QA artifacts
+output/
+
+# Local release archives (publish selected builds through GitHub Releases)
+*.zip
+

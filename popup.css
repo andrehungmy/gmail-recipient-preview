@@ -1,0 +1,47 @@
+:root {
+  color-scheme: light;
+  font-family: "Google Sans", Roboto, Arial, "Noto Sans TC", sans-serif;
+  background: #fff;
+  color: #1f1f1f;
+}
+
+* { box-sizing: border-box; }
+body { width: 360px; margin: 0; background: #fff; }
+.popup-shell { padding: 20px; }
+
+.popup-header { display: flex; align-items: center; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid #dadce0; }
+
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #041e49;
+  background: #d3e3fd;
+}
+
+.brand-mark svg { width: 24px; height: 24px; }
+h1 { margin: 0; font: 500 17px/22px "Google Sans", Roboto, Arial, "Noto Sans TC", sans-serif; }
+.popup-header p { margin: 2px 0 0; color: #5f6368; font: 400 12px/16px Roboto, Arial, "Noto Sans TC", sans-serif; }
+
+.guide-launch { padding: 12px 0; }
+.guide-launch > a { width: 100%; min-height: 62px; padding: 8px; display: grid; grid-template-columns: 36px 1fr 20px; align-items: center; gap: 10px; border-radius: 14px; background: transparent; color: #1f1f1f; text-align: left; text-decoration: none; }
+.guide-launch > a:hover { background: #f1f3f4; }
+.guide-launch > a:focus-visible { outline: 2px solid #a8c7fa; outline-offset: 1px; }
+.guide-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: #d3e3fd; color: #041e49; box-shadow: 0 1px 3px rgba(60,64,67,.18); }
+.guide-mark svg { width: 20px; height: 20px; }
+.guide-launch strong, .guide-launch small { display: block; }
+.guide-launch strong { font: 500 14px/20px "Google Sans", Roboto, Arial, "Noto Sans TC", sans-serif; }
+.guide-launch small { margin-top: 1px; color: #5f6368; font: 400 12px/17px Roboto, Arial, "Noto Sans TC", sans-serif; }
+.chevron { width: 18px; height: 18px; color: #5f6368; }
+
+
+.privacy-note { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 12px; background: #eaf1fb; color: #041e49; }
+.privacy-note svg { width: 20px; height: 20px; flex: 0 0 20px; margin-top: 1px; }
+.privacy-note strong { font: 500 13px/18px "Google Sans", Roboto, Arial, "Noto Sans TC", sans-serif; }
+.privacy-note p { margin: 3px 0 0; color: #3c4d67; font: 400 12px/17px Roboto, Arial, "Noto Sans TC", sans-serif; }
+
+.status { margin-top: 17px; padding: 0 4px; display: flex; align-items: center; gap: 8px; color: #5f6368; font: 500 11px/16px "Google Sans", Roboto, Arial, "Noto Sans TC", sans-serif; }
+.status > span:first-child { width: 8px; height: 8px; border-radius: 50%; background: #1e8e3e; box-shadow: 0 0 0 3px #e6f4ea; }

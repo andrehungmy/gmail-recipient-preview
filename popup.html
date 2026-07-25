@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gmail Recipient Preview</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup-shell">
+      <header class="popup-header">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="7" y="2.75" width="10" height="18.5" rx="2.5" stroke="currentColor" stroke-width="1.75"/>
+            <path d="M9.4 8.2 12 10.15l2.6-1.95" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10.25 17.75h3.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1 data-i18n="productName">Gmail Recipient Preview</h1>
+          <p data-i18n="subtitle">Live recipient view before you send</p>
+        </div>
+      </header>
+
+      <section class="guide-launch">
+        <a href="landing.html" target="_blank" rel="noopener">
+          <span class="guide-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4.5h9.5A2.5 2.5 0 0 1 17 7v12.5H7.5A2.5 2.5 0 0 1 5 17V4.5Zm0 12.5c0-1.38 1.12-2.5 2.5-2.5H17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span><strong data-i18n="guideCta">Open product guide</strong><small data-i18n="guideHint">Features, setup, privacy, and contact</small></span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </section>
+
+      <section class="privacy-note">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7.5 10V7.7A4.5 4.5 0 0 1 12 3.2a4.5 4.5 0 0 1 4.5 4.5V10M6 10h12v10H6V10Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        </svg>
+        <div><strong data-i18n="privacyTitle">Private by design</strong><p data-i18n="privacyBody">Your draft stays in this browser tab and is never uploaded or stored.</p></div>
+      </section>
+
+      <footer class="status"><span aria-hidden="true"></span><span data-i18n="ready">Ready on mail.google.com</span></footer>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>
