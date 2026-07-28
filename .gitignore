@@ -2,7 +2,8 @@
 
 # Generated QA artifacts
 output/
+dist/
+node_modules/
 
 # Local release archives (publish selected builds through GitHub Releases)
 *.zip
-

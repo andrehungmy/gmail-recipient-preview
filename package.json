@@ -1,0 +1,34 @@
+{
+  "name": "gmail-recipient-preview",
+  "version": "0.8.3",
+  "private": true,
+  "description": "Local-first recipient preview for Gmail drafts.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "format": "prettier --write --ignore-unknown package.json eslint.config.mjs jsconfig.json tools tests .github docs assets/store/manifest.json landing.html privacy.html README.md PRIVACY.md SECURITY_REVIEW.md TEST_CASES.md CONTRIBUTING.md SECURITY.md",
+    "format:check": "prettier --check --ignore-unknown package.json eslint.config.mjs jsconfig.json tools tests .github docs assets/store/manifest.json landing.html privacy.html README.md PRIVACY.md SECURITY_REVIEW.md TEST_CASES.md CONTRIBUTING.md SECURITY.md",
+    "lint": "eslint .",
+    "typecheck": "tsc -p jsconfig.json",
+    "test": "node tests/browser-tests.mjs",
+    "test:security": "node tools/security-check.mjs",
+    "validate:store": "node tools/validate-store-assets.mjs",
+    "build": "npm run validate",
+    "validate": "npm run format:check && npm run lint && npm run typecheck && npm run test:security",
+    "package": "node tools/package-extension.mjs",
+    "package:inspect": "node tools/inspect-package.mjs",
+    "capture:landing": "node tools/capture-landing-assets.mjs",
+    "render:store": "node tools/render-store-assets.mjs",
+    "release:assets": "npm run capture:landing && npm run render:store",
+    "release:check": "npm run build && npm test && npm run validate:store && npm run package && npm run package:inspect"
+  },
+  "devDependencies": {
+    "eslint": "10.7.0",
+    "playwright-core": "1.61.1",
+    "prettier": "3.9.6",
+    "sharp": "^0.35.3",
+    "typescript": "7.0.2"
+  }
+}

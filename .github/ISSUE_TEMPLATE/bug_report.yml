@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a reproducible product, Gmail integration, or rendering problem using synthetic content.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include real email content, addresses, mailbox screenshots, credentials, or private account data. Report security/privacy vulnerabilities privately according to SECURITY.md.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Use a minimal synthetic draft and include Compose mode (new, reply, forward, pop-out, etc.).
+    validations:
+      required: true
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension version or commit
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Chrome version, OS, Gmail language, and relevant display/theme settings.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Compose detection or lifecycle
+        - Preview synchronization
+        - Sanitization or formatting
+        - Mobile or desktop layout
+        - Approximate Dark Mode
+        - Accessibility or keyboard
+        - Localization or copy
+        - Popup, product guide, or packaging
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Attach only synthetic, privacy-safe evidence.
