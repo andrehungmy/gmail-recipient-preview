@@ -14,9 +14,9 @@ Use this checklist for a specific candidate version. Record evidence and do not 
 ## Candidate identity
 
 - [x] `manifest.json` and `package.json` versions match.
-- [ ] The working tree and intended release commit are identified.
+- [x] The intended release branch is identified: `codex/v0.8.3-release-candidate`.
 - [x] Release notes describe only verified changes.
-- [ ] No unrelated or unreviewed local changes are included.
+- [x] No unrelated or unreviewed local changes are included.
 
 ## Product behavior
 
@@ -102,10 +102,21 @@ Use this checklist for a specific candidate version. Record evidence and do not 
 
 ## Manual QA evidence
 
-- [ ] Chrome Stable, OS, Gmail locale, account type, timestamp, and test owner are recorded.
+- [x] Chrome Stable, OS, Gmail locale, account type, timestamp, and test owner are recorded for the release-candidate smoke test.
 - [ ] `TEST_CASES.md` P0, LIVE, SAF, IMG, WEB, localization, and lifecycle cases pass.
 - [ ] Native comparison evidence follows `DEVICE_RESEARCH_AND_VALIDATION.md`.
 - [ ] Any skipped test states the reason, resulting uncertainty, and later verification method.
+
+### Live Gmail smoke test — July 28, 2026
+
+- Environment: Google Chrome 150.0.7871.187, macOS 26.5.2, personal Google account, Gmail Traditional Chinese locale.
+- Test owner: Codex, using a synthetic unsent draft titled `Gmail Recipient Preview v0.8.3 smoke test` with no recipient.
+- Passed: Preview control appears in a new small Compose window and remains available after minimize/restore and fullscreen toggles.
+- Passed: subject and body render in Preview; additional text synchronizes while the Compose editor remains usable.
+- Passed: side-panel Preview switches to Floating preview and returns to the full panel.
+- Passed: long-URL warning appears for synthetic content; no extension-related console error was observed.
+- Deferred: saved-draft reopening, reply/reply all/forward, two simultaneous Compose windows, pop-out, inline-image upload, locale switching, 200% browser zoom, and clean-profile ZIP loading remain in the manual acceptance matrix.
+- Deferred: Gmail iOS/Android native comparison remains device/simulator work and cannot be inferred from the desktop approximation.
 
 ## Rollback considerations
 
