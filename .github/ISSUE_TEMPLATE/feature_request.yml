@@ -1,0 +1,31 @@
+name: Feature request
+description: Propose a focused improvement to the local pre-send preview experience.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: What user need is not met today? Avoid proposing a solution only.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe the smallest useful outcome and how a user would know it works.
+    validations:
+      required: true
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Privacy, permissions, and fidelity impact
+      description: Would this require new data access, storage, network calls, permissions, or rendering claims?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Include a no-change or documentation-only option when relevant.

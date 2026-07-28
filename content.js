@@ -1,24 +1,77 @@
 (() => {
   'use strict';
 
+  const INSTANCE_FLAG = '__gmailRecipientPreviewInitialized';
+  if (globalThis[INSTANCE_FLAG]) return;
+  globalThis[INSTANCE_FLAG] = true;
+
   const BUTTON_CLASS = 'gmail-reader-preview-button';
   const ROOT_ID = 'gmail-reader-preview-root';
+  const SUBJECT_SELECTOR = [
+    'input[name="subjectbox"]',
+    'input[aria-label*="Subject" i]',
+    'input[aria-label*="主旨"]',
+    'input[aria-label*="主题"]',
+  ].join(', ');
   const STORAGE_KEYS = {
     locale: 'gmailReaderPreviewLocale',
     devicePreset: 'gmailReaderPreviewDevicePreset',
-    previewScale: 'gmailReaderPreviewScale'
+    previewScale: 'gmailReaderPreviewScale',
   };
   const DEVICE_PRESETS = {
-    iphone16: { label: 'iPhone 16', width: 393, height: 852, os: 'ios', cutout: 'island' },
-    iphone17: { label: 'iPhone 17', width: 402, height: 874, os: 'ios', cutout: 'island' },
-    iphone17pro: { label: 'iPhone 17 Pro', width: 402, height: 874, os: 'ios', cutout: 'island' },
-    iphone17promax: { label: 'iPhone 17 Pro Max', width: 440, height: 956, os: 'ios', cutout: 'island' },
-    pixel9: { label: 'Pixel 9', width: 412, height: 925, os: 'android', cutout: 'punch' },
-    galaxya07: { label: 'Samsung Galaxy A07', width: 360, height: 800, os: 'android', cutout: 'teardrop' },
-    galaxya17: { label: 'Samsung Galaxy A17', width: 393, height: 851, os: 'android', cutout: 'teardrop' }
+    iphone16: {
+      label: 'iPhone 16',
+      width: 393,
+      height: 852,
+      os: 'ios',
+      cutout: 'island',
+    },
+    iphone17: {
+      label: 'iPhone 17',
+      width: 402,
+      height: 874,
+      os: 'ios',
+      cutout: 'island',
+    },
+    iphone17pro: {
+      label: 'iPhone 17 Pro',
+      width: 402,
+      height: 874,
+      os: 'ios',
+      cutout: 'island',
+    },
+    iphone17promax: {
+      label: 'iPhone 17 Pro Max',
+      width: 440,
+      height: 956,
+      os: 'ios',
+      cutout: 'island',
+    },
+    pixel9: {
+      label: 'Pixel 9',
+      width: 412,
+      height: 925,
+      os: 'android',
+      cutout: 'punch',
+    },
+    galaxya07: {
+      label: 'Samsung Galaxy A07',
+      width: 360,
+      height: 800,
+      os: 'android',
+      cutout: 'teardrop',
+    },
+    galaxya17: {
+      label: 'Samsung Galaxy A17',
+      width: 393,
+      height: 851,
+      os: 'android',
+      cutout: 'teardrop',
+    },
   };
   let activeEditor = null;
   let activeCompose = null;
+  let activeSubjectInput = null;
   let shiftedCompose = null;
   let activeDraftObserver = null;
   let composeLayoutObserver = null;
@@ -26,7 +79,12 @@
   let refreshTimer = null;
   let layoutFrame = null;
   let scaleFrame = null;
+  let composeTrayFrame = null;
   let currentLocale = 'en';
+  let riskIdCounter = 0;
+  let activeRisksById = new Map();
+  const riskNodeIds = new WeakMap();
+  const draftWarningStates = new WeakMap();
   const viewState = {
     device: 'mobile',
     theme: 'light',
@@ -36,7 +94,8 @@
     floating: false,
     floatingScale: 40,
     floatingPosition: null,
-    fullPanelOverride: false
+    fullPanelOverride: false,
+    controlsCollapsed: false,
   };
 
   const copy = {
@@ -56,16 +115,19 @@
       desktop: 'Desktop',
       theme: 'Color mode',
       light: 'Light',
-      dark: 'Dark',
+      dark: 'Dark (approx.)',
       referenceDevice: 'Reference device',
       previewScale: 'Preview zoom',
-      fitPreview: 'Fit',
+      previewSettings: 'Preview settings',
+      fitPreview: 'Show full device',
       comfortablePreview: '70%',
       detailPreview: '100% detail',
-      referenceScaleNote: '100% = 1× logical viewport, not the phone’s physical size.',
-      iosReference: 'iOS logical reference',
-      androidReference: 'Android calibrated reference',
-      scrollHint: 'Scroll around the phone to move the whole device. Scroll inside a long email to read it.',
+      referenceScaleNote:
+        '100% uses the original preview scale; it is not the phone’s physical size.',
+      iosReference: 'iOS reference layout',
+      androidReference: 'Android reference layout',
+      scrollHint:
+        'Scroll around the phone to move the whole device. Scroll inside a long email to read it.',
       logicalDisplay: '{width} × {height} reference viewport',
       decreaseScale: 'Decrease preview size',
       increaseScale: 'Increase preview size',
@@ -84,39 +146,55 @@
       looksGood: 'Mobile readability looks good',
       issuesOne: '1 potential issue found',
       issuesMany: '{count} potential issues found',
-      riskHidden: 'Some text may be hidden here but visible in another email view.',
-      riskContrast: 'Low-contrast text may be difficult to read in Light or Dark Mode.',
+      showIssue: 'Show issue in preview',
+      ignoreIssue: 'Ignore this instance',
+      muteIssue: 'Mute this issue for this draft',
+      restoreWarnings: 'Restore hidden warnings',
+      riskHidden:
+        'Some text may be hidden here but visible in another email view.',
+      riskContrast:
+        'Low-contrast text may be difficult to read in Light or Dark Mode.',
       riskTiny: 'Very small text may be hard to read on a phone.',
       riskBlank: 'Several empty lines may create a large gap on mobile.',
       riskUrl: 'A long URL may wrap awkwardly on a narrow screen.',
-      riskOversized: 'An image or table may extend beyond the mobile screen.'
+      riskLongString:
+        'A long unbroken word or code may be difficult to read on a narrow screen.',
+      riskOversized:
+        'A wide image or table may be scaled down or extend beyond the mobile screen.',
+      riskRemoteImage:
+        'A network-backed image is hidden in Preview to avoid contacting its host. Recipients may still see it.',
+      blockedImage: 'Image hidden in local Preview',
+      previewLimit:
+        'Approximate preview only: email apps handle Dark Mode and formatting differently. Preview never changes your draft.',
     },
     'zh-TW': {
       button: '預覽',
-      buttonTooltip: '預覽收件者可能看到的信件畫面',
+      buttonTooltip: '預覽這封信在收件者畫面上的呈現方式',
       title: 'Gmail 收件者預覽',
-      subtitle: '寄出前即時查看收件者畫面',
+      subtitle: '寄出前同步查看收件畫面',
       close: '關閉預覽',
       settings: '設定',
       floatingPreview: '浮動預覽',
       exitFloating: '返回完整預覽',
       dragPreview: '拖曳浮動預覽',
-      floatingScale: '浮動預覽縮放',
-      device: '裝置預覽',
+      floatingScale: '浮動預覽比例',
+      device: '預覽裝置',
       mobile: '行動裝置',
       desktop: '電腦',
       theme: '顯示模式',
       light: '淺色',
-      dark: '深色',
+      dark: '深色（近似）',
       referenceDevice: '參考裝置',
-      previewScale: '預覽縮放',
-      fitPreview: '符合畫面',
+      previewScale: '預覽比例',
+      previewSettings: '預覽設定',
+      fitPreview: '顯示完整裝置',
       comfortablePreview: '70%',
       detailPreview: '100% 細節',
-      referenceScaleNote: '100% = 1× logical viewport，非手機實體大小。',
-      iosReference: 'iOS logical reference',
-      androidReference: 'Android calibrated reference',
-      scrollHint: '在手機外側滑動可移動整台裝置；信件較長時，可在信件內滑動閱讀。',
+      referenceScaleNote: '100% 代表原始預覽比例，不等於手機的實際尺寸。',
+      iosReference: 'iOS 參考版面',
+      androidReference: 'Android 參考版面',
+      scrollHint:
+        '在手機外側滑動可移動畫面；信件較長時，直接在信件內滑動閱讀。',
       logicalDisplay: '{width} × {height} 參考顯示區',
       decreaseScale: '縮小預覽',
       increaseScale: '放大預覽',
@@ -131,17 +209,27 @@
       unsubscribe: '取消訂閱',
       reply: '回覆',
       forward: '轉寄',
-      processed: '僅在這台裝置上處理',
-      looksGood: '行動版易讀性良好',
+      processed: '內容只在這台裝置處理',
+      looksGood: '手機版易讀性良好',
       issuesOne: '發現 1 個潛在問題',
       issuesMany: '發現 {count} 個潛在問題',
+      showIssue: '在預覽中查看問題位置',
+      ignoreIssue: '忽略這一處',
+      muteIssue: '此草稿不再提醒',
+      restoreWarnings: '恢復已忽略的提醒',
       riskHidden: '部分文字在這裡可能不可見，但可能在其他郵件畫面中顯示。',
       riskContrast: '部分文字對比較低，在淺色或深色模式下可能不易閱讀。',
       riskTiny: '部分文字尺寸過小，可能不易在手機上閱讀。',
       riskBlank: '連續空白行可能在行動裝置上形成過大的間距。',
       riskUrl: '長網址可能會在窄螢幕上產生不自然的換行。',
-      riskOversized: '圖片或表格可能超出行動裝置畫面。'
-    }
+      riskLongString: '過長且無法斷行的單字或代碼，可能不易在窄螢幕上閱讀。',
+      riskOversized: '過寬的圖片或表格可能被縮小，或超出行動裝置畫面。',
+      riskRemoteImage:
+        '為避免連線到圖片來源，預覽已隱藏網路圖片；收件者仍可能看得到。',
+      blockedImage: '圖片未顯示於本機預覽',
+      previewLimit:
+        '這是近似預覽；不同郵件 App 對深色模式與格式的處理不一。預覽不會修改草稿。',
+    },
   };
 
   const icons = {
@@ -168,7 +256,7 @@
     grip: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="7" r="1.2"/><circle cx="15" cy="7" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="17" r="1.2"/><circle cx="15" cy="17" r="1.2"/></svg>`,
     more: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>`,
     warning: `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4 21 20H3L12 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 9v5m0 3v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-    check: `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6.5 12.5 3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    check: `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6.5 12.5 3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
   };
 
   function t(key, variables = {}) {
@@ -179,29 +267,12 @@
     return value;
   }
 
-  function readLocalPreferences(keys) {
-    const values = {};
-    try {
-      keys.forEach((key) => {
-        const value = localStorage.getItem(key);
-        if (value !== null) values[key] = value;
-      });
-    } catch (_) {}
-    return values;
-  }
-
-  function writeLocalPreferences(values) {
-    try {
-      Object.entries(values).forEach(([key, value]) => localStorage.setItem(key, String(value)));
-    } catch (_) {}
-  }
-
   async function storageGet(keys) {
     try {
       const extensionStorage = globalThis.chrome?.storage?.local;
       if (extensionStorage) return await extensionStorage.get(keys);
     } catch (_) {}
-    return readLocalPreferences(keys);
+    return {};
   }
 
   async function storageSet(values) {
@@ -212,11 +283,31 @@
         return;
       }
     } catch (_) {}
-    writeLocalPreferences(values);
   }
 
   function findComposeRoot(editor) {
-    return editor.closest('[role="dialog"]') || editor.closest('form') || editor.parentElement?.parentElement?.parentElement;
+    return (
+      editor.closest('[role="dialog"]') ||
+      editor.closest('form') ||
+      editor.parentElement?.parentElement?.parentElement
+    );
+  }
+
+  function findSubjectInput(root) {
+    return root?.querySelector(SUBJECT_SELECTOR) || null;
+  }
+
+  function findEditorInCompose(root, preferredEditor = null) {
+    if (preferredEditor?.isConnected && root?.contains(preferredEditor))
+      return preferredEditor;
+    const editors = [
+      ...(root?.querySelectorAll('div[contenteditable="true"]') || []),
+    ].filter((editor) => !editor.closest(`#${ROOT_ID}`));
+    return (
+      editors.find((editor) => editor.getAttribute('role') === 'textbox') ||
+      editors[0] ||
+      null
+    );
   }
 
   function findDiscardControl(root) {
@@ -229,7 +320,7 @@
       '[aria-label*="刪除草稿"]',
       '[data-tooltip*="刪除草稿"]',
       '[aria-label*="删除草稿"]',
-      '[data-tooltip*="删除草稿"]'
+      '[data-tooltip*="删除草稿"]',
     ];
     for (const selector of explicitSelectors) {
       const match = root.querySelector(selector);
@@ -237,42 +328,74 @@
     }
 
     const rootRect = root.getBoundingClientRect();
-    return [...root.querySelectorAll('button, [role="button"]')]
-      .filter((element) => {
-        if (element.classList.contains(BUTTON_CLASS)) return false;
-        const rect = element.getBoundingClientRect();
-        const visible = rect.width >= 20 && rect.height >= 20 && getComputedStyle(element).visibility !== 'hidden';
-        const nearBottom = rootRect.bottom - rect.bottom >= -2 && rootRect.bottom - rect.bottom < 72;
-        return visible && nearBottom && rect.left > rootRect.left + rootRect.width * .55;
-      })
-      .sort((a, b) => b.getBoundingClientRect().right - a.getBoundingClientRect().right)[0] || null;
+    return (
+      [...root.querySelectorAll('button, [role="button"]')]
+        .filter((element) => {
+          if (element.classList.contains(BUTTON_CLASS)) return false;
+          const rect = element.getBoundingClientRect();
+          const visible =
+            rect.width >= 20 &&
+            rect.height >= 20 &&
+            getComputedStyle(element).visibility !== 'hidden';
+          const nearBottom =
+            rootRect.bottom - rect.bottom >= -2 &&
+            rootRect.bottom - rect.bottom < 72;
+          return (
+            visible &&
+            nearBottom &&
+            rect.left > rootRect.left + rootRect.width * 0.55
+          );
+        })
+        .sort(
+          (a, b) =>
+            b.getBoundingClientRect().right - a.getBoundingClientRect().right,
+        )[0] || null
+    );
   }
 
-  function positionButtonNearDiscard(root, button) {
+  function clearComposeButtonHost(button) {
+    const host = button._grpButtonHost;
+    const cell = button._grpButtonCell;
+    if (host instanceof Element)
+      host.classList.remove('grp-compose-button-host');
+    if (cell instanceof Element)
+      cell.classList.remove('grp-compose-button-cell');
+    button._grpButtonHost = null;
+    button._grpButtonCell = null;
+  }
+
+  function placeButtonByDiscard(root, button) {
     if (!root.isConnected || !button.isConnected) return;
     const discard = findDiscardControl(root);
+    const compact = root.getBoundingClientRect().width < 720;
+    button.toggleAttribute('data-compact', compact);
+
     if (!discard) {
-      button.toggleAttribute('data-compact', root.getBoundingClientRect().width < 720);
-      button.classList.remove('grp-compose-near-trash');
-      button.classList.add('grp-compose-fallback');
-      button.style.left = '';
-      button.style.top = '';
+      button.hidden = true;
       return;
     }
 
-    const rootRect = root.getBoundingClientRect();
-    const discardRect = discard.getBoundingClientRect();
-    const compact = rootRect.width < 720;
-    button.toggleAttribute('data-compact', compact);
-    button.classList.remove('grp-compose-fallback');
-    button.classList.add('grp-compose-near-trash');
-    button.style.right = '';
-    button.style.bottom = '';
+    const host = discard.parentElement;
+    if (!host || host === root) {
+      button.hidden = true;
+      return;
+    }
 
-    const buttonWidth = compact ? 32 : button.offsetWidth;
-    const buttonHeight = compact ? 32 : 36;
-    button.style.left = `${Math.round(discardRect.left - rootRect.left - buttonWidth - 8)}px`;
-    button.style.top = `${Math.round(discardRect.top - rootRect.top + (discardRect.height - buttonHeight) / 2)}px`;
+    const cell = discard.closest('td');
+    if (button._grpButtonHost !== host || button._grpButtonCell !== cell) {
+      clearComposeButtonHost(button);
+      button._grpButtonHost = host;
+      button._grpButtonCell = cell;
+    }
+    host.classList.add('grp-compose-button-host');
+    if (cell) cell.classList.add('grp-compose-button-cell');
+    if (
+      button.parentElement !== host ||
+      button.nextElementSibling !== discard
+    ) {
+      host.insertBefore(button, discard);
+    }
+    button.hidden = false;
   }
 
   function updateComposeButton(button) {
@@ -287,13 +410,40 @@
     document.querySelectorAll(`.${BUTTON_CLASS}`).forEach(updateComposeButton);
   }
 
+  function cleanupPreviewButton(button) {
+    if (!(button instanceof Element)) return;
+    button._grpResizeObserver?.disconnect();
+    button._grpComposeObserver?.disconnect();
+    clearComposeButtonHost(button);
+    button._grpResizeObserver = null;
+    button._grpComposeObserver = null;
+    button._grpReposition = null;
+  }
+
+  function cleanupButtonsInNode(node) {
+    if (!(node instanceof Element)) return;
+    const buttons = [
+      ...(node.matches(`.${BUTTON_CLASS}`) ? [node] : []),
+      ...node.querySelectorAll(`.${BUTTON_CLASS}`),
+    ];
+    buttons.forEach(cleanupPreviewButton);
+  }
+
   function addPreviewButton(editor) {
     const root = findComposeRoot(editor);
-    if (!root || root.querySelector(`.${BUTTON_CLASS}`)) return;
+    if (!root) return;
+    const existingButton = root.querySelector(`.${BUTTON_CLASS}`);
+    if (existingButton?._grpBound) return;
+    if (existingButton) {
+      cleanupPreviewButton(existingButton);
+      existingButton.remove();
+    }
 
     const button = document.createElement('button');
     button.type = 'button';
     button.className = BUTTON_CLASS;
+    button.hidden = true;
+    button._grpBound = true;
     button.innerHTML = `${icons.preview}<span class="grp-compose-label"></span><span class="grp-compose-tooltip" role="tooltip"></span>`;
     updateComposeButton(button);
     button.addEventListener('click', (event) => {
@@ -303,8 +453,7 @@
     });
     button.addEventListener('mousedown', (event) => event.preventDefault());
 
-    const currentPosition = getComputedStyle(root).position;
-    if (currentPosition === 'static') root.style.position = 'relative';
+    button._grpComposeRoot = root;
     root.appendChild(button);
     let repositionScheduled = false;
     const scheduleReposition = () => {
@@ -312,7 +461,7 @@
       repositionScheduled = true;
       requestAnimationFrame(() => {
         repositionScheduled = false;
-        positionButtonNearDiscard(root, button);
+        placeButtonByDiscard(root, button);
       });
     };
     button._grpReposition = scheduleReposition;
@@ -326,126 +475,568 @@
       button._grpResizeObserver = resizeObserver;
     }
     const composeObserver = new MutationObserver((mutations) => {
-      if (mutations.some((mutation) => !button.contains(mutation.target))) scheduleReposition();
+      if (mutations.some((mutation) => !button.contains(mutation.target)))
+        scheduleReposition();
     });
     composeObserver.observe(root, {
       attributes: true,
       attributeFilter: ['aria-label', 'data-tooltip', 'style'],
       childList: true,
-      subtree: true
+      subtree: true,
     });
     button._grpComposeObserver = composeObserver;
   }
 
+  /** @param {Document | Element} [scope] */
   function scanForEditors(scope = document) {
     const selector = 'div[contenteditable="true"]';
-    const editors = [...(scope.matches?.(selector) ? [scope] : []), ...scope.querySelectorAll(selector)];
+    const scopedEditor =
+      scope instanceof Element && scope.matches(selector) ? [scope] : [];
+    const editors = [...scopedEditor, ...scope.querySelectorAll(selector)];
     editors.forEach((editor) => {
       if (editor.closest(`#${ROOT_ID}`)) return;
       const root = findComposeRoot(editor);
-      const hasSubject = root?.querySelector('input[name="subjectbox"], input[aria-label*="Subject" i], input[aria-label*="主旨"]');
-      const hasSend = root?.querySelector('[command="+send"], [aria-label*="Send" i], [data-tooltip*="Send" i], [aria-label*="傳送"], [data-tooltip*="傳送"]');
-      const looksLikeCompose = root?.getAttribute('role') === 'dialog' && (hasSubject || hasSend || findDiscardControl(root));
+      const hasSubject = findSubjectInput(root);
+      const hasSend = root?.querySelector(
+        '[command="+send"], [aria-label*="Send" i], [data-tooltip*="Send" i], [aria-label*="傳送"], [data-tooltip*="傳送"]',
+      );
+      const looksLikeCompose =
+        root?.getAttribute('role') === 'dialog' &&
+        (hasSubject || hasSend || findDiscardControl(root));
       if (looksLikeCompose) addPreviewButton(editor);
     });
   }
 
-  function getDraft(editor) {
+  function getNodePath(root, node) {
+    if (!(root instanceof Node) || !(node instanceof Node)) return null;
+    const path = [];
+    let current = node;
+    while (current && current !== root) {
+      const parent = current.parentNode;
+      if (!parent) return null;
+      path.unshift(
+        [...parent.childNodes].findIndex((child) => child === current),
+      );
+      current = parent;
+    }
+    return current === root ? path : null;
+  }
+
+  function getNodeAtPath(root, path) {
+    if (!Array.isArray(path)) return null;
+    let current = root;
+    for (const index of path) {
+      current = current?.childNodes?.[index];
+      if (!current) return null;
+    }
+    return current;
+  }
+
+  function annotateDraftClone(editor, clone, risks) {
+    risks.forEach((risk) => {
+      const path = getNodePath(editor, risk.anchor);
+      let target = getNodeAtPath(clone, path);
+      if (!(target instanceof Element)) target = target?.parentElement;
+      if (!(target instanceof Element) || target === clone) {
+        target = clone.firstElementChild;
+      }
+      if (!(target instanceof Element)) return;
+      const existing =
+        target
+          .getAttribute('data-grp-risk-anchor')
+          ?.split(/\s+/)
+          .filter(Boolean) || [];
+      if (!existing.includes(risk.id)) existing.push(risk.id);
+      target.setAttribute('data-grp-risk-anchor', existing.join(' '));
+    });
+  }
+
+  function getDraft(editor, risks = []) {
     const compose = findComposeRoot(editor);
-    const subject = compose?.querySelector('input[name="subjectbox"]')?.value?.trim() || t('noSubject');
-    const body = sanitizeHtml(editor.innerHTML);
+    const subject = findSubjectInput(compose)?.value?.trim() || t('noSubject');
+    const template = document.createElement('template');
+    template.innerHTML = editor.innerHTML;
+    template.content
+      .querySelectorAll('[data-grp-risk-anchor]')
+      .forEach((node) => node.removeAttribute('data-grp-risk-anchor'));
+    annotateDraftClone(editor, template.content, risks);
+    const body = sanitizeHtml(
+      template.innerHTML,
+      new Set(risks.map((risk) => risk.id)),
+    );
     return { subject, body };
   }
 
-  function sanitizeHtml(html) {
+  const SAFE_EMAIL_TAGS = new Set([
+    'A',
+    'B',
+    'BLOCKQUOTE',
+    'BR',
+    'CODE',
+    'DEL',
+    'DIV',
+    'EM',
+    'FONT',
+    'HR',
+    'I',
+    'IMG',
+    'LI',
+    'OL',
+    'P',
+    'PRE',
+    'S',
+    'SMALL',
+    'SPAN',
+    'STRIKE',
+    'STRONG',
+    'SUB',
+    'SUP',
+    'TABLE',
+    'TBODY',
+    'TD',
+    'TFOOT',
+    'TH',
+    'THEAD',
+    'TR',
+    'U',
+    'UL',
+  ]);
+  const DROP_WITH_CONTENT_TAGS = new Set([
+    'BASE',
+    'BUTTON',
+    'EMBED',
+    'FORM',
+    'IFRAME',
+    'INPUT',
+    'LINK',
+    'META',
+    'OBJECT',
+    'SCRIPT',
+    'SELECT',
+    'STYLE',
+    'TEXTAREA',
+    'VIDEO',
+    'AUDIO',
+    'SOURCE',
+  ]);
+  const GLOBAL_EMAIL_ATTRIBUTES = new Set([
+    'align',
+    'dir',
+    'lang',
+    'style',
+    'title',
+  ]);
+  const TAG_EMAIL_ATTRIBUTES = {
+    A: new Set(['href']),
+    FONT: new Set(['color', 'face', 'size']),
+    IMG: new Set(['alt', 'height', 'src', 'title', 'width']),
+    OL: new Set(['start', 'type']),
+    TD: new Set(['colspan', 'rowspan', 'valign']),
+    TH: new Set(['colspan', 'rowspan', 'scope', 'valign']),
+  };
+  const SAFE_STYLE_PROPERTIES = new Set([
+    'background-color',
+    'border',
+    'border-bottom',
+    'border-color',
+    'border-left',
+    'border-right',
+    'border-style',
+    'border-top',
+    'border-width',
+    'color',
+    'display',
+    'font-family',
+    'font-size',
+    'font-style',
+    'font-weight',
+    'height',
+    'letter-spacing',
+    'line-height',
+    'margin',
+    'margin-bottom',
+    'margin-left',
+    'margin-right',
+    'margin-top',
+    'max-height',
+    'max-width',
+    'min-height',
+    'min-width',
+    'opacity',
+    'padding',
+    'padding-bottom',
+    'padding-left',
+    'padding-right',
+    'padding-top',
+    'text-align',
+    'text-decoration',
+    'text-indent',
+    'vertical-align',
+    'white-space',
+    'width',
+    'word-break',
+    'word-wrap',
+  ]);
+  const SAFE_INLINE_IMAGE_PATTERN =
+    /^(blob:|data:image\/(?:avif|gif|jpe?g|png|webp);base64,)/i;
+  const NETWORK_IMAGE_PATTERN = /^(https?:|\/\/|\/(?!\/)|\.\.?\/)/i;
+
+  function safeUrl(value, type) {
+    const normalized = String(value || '').trim();
+    if (!normalized) return '';
+    if (type === 'image' && SAFE_INLINE_IMAGE_PATTERN.test(normalized))
+      return normalized;
+    if (type === 'link' && /^(https?:|mailto:|tel:|#|\/)/i.test(normalized))
+      return normalized;
+    return '';
+  }
+
+  function isNetworkImageSource(value) {
+    return NETWORK_IMAGE_PATTERN.test(String(value || '').trim());
+  }
+
+  function replaceImageWithPlaceholder(node) {
+    const placeholder = document.createElement('span');
+    const alternative = node.getAttribute('alt')?.trim();
+    const label = alternative
+      ? `${t('blockedImage')}: ${alternative}`
+      : t('blockedImage');
+    placeholder.className = 'grp-image-placeholder';
+    placeholder.setAttribute('role', 'img');
+    placeholder.setAttribute('aria-label', label);
+    const riskAnchors = node.getAttribute('data-grp-risk-anchor');
+    if (riskAnchors)
+      placeholder.setAttribute('data-grp-risk-anchor', riskAnchors);
+    placeholder.textContent = label;
+    node.replaceWith(placeholder);
+  }
+
+  function sanitizeInlineStyle(node) {
+    const original = node.getAttribute('style');
+    if (!original) return;
+    const declarations = [...node.style].map((property) => [
+      property,
+      node.style.getPropertyValue(property),
+      node.style.getPropertyPriority(property),
+    ]);
+    node.removeAttribute('style');
+    declarations.forEach(([property, value, priority]) => {
+      const normalized = property.toLowerCase();
+      if (!SAFE_STYLE_PROPERTIES.has(normalized)) return;
+      if (/url\s*\(|expression\s*\(|@import|javascript:/i.test(value)) return;
+      node.style.setProperty(normalized, value, priority);
+    });
+    if (!node.getAttribute('style')) node.removeAttribute('style');
+  }
+
+  function sanitizeHtml(html, allowedRiskIds = new Set()) {
     const template = document.createElement('template');
     template.innerHTML = html;
-    template.content.querySelectorAll('script, style, iframe, object, embed, form, input, button').forEach((node) => node.remove());
-    template.content.querySelectorAll('*').forEach((node) => {
+    [...template.content.querySelectorAll('*')].forEach((node) => {
+      if (DROP_WITH_CONTENT_TAGS.has(node.tagName)) {
+        node.remove();
+        return;
+      }
+      if (!SAFE_EMAIL_TAGS.has(node.tagName)) {
+        node.replaceWith(...node.childNodes);
+        return;
+      }
+
+      sanitizeInlineStyle(node);
       [...node.attributes].forEach((attribute) => {
-        if (attribute.name.toLowerCase().startsWith('on')) node.removeAttribute(attribute.name);
-        if (attribute.name === 'contenteditable') node.removeAttribute(attribute.name);
+        const name = attribute.name.toLowerCase();
+        const tagAttributes = TAG_EMAIL_ATTRIBUTES[node.tagName];
+        if (name === 'data-grp-risk-anchor') {
+          const ids = attribute.value.split(/\s+/).filter(Boolean);
+          if (ids.length && ids.every((id) => allowedRiskIds.has(id))) return;
+        }
+        if (!GLOBAL_EMAIL_ATTRIBUTES.has(name) && !tagAttributes?.has(name))
+          node.removeAttribute(attribute.name);
       });
+
       if (node.tagName === 'A') {
-        const href = node.getAttribute('href') || '';
-        if (/^\s*(javascript|data):/i.test(href)) node.removeAttribute('href');
-        node.setAttribute('target', '_blank');
-        node.setAttribute('rel', 'noopener noreferrer');
+        const href = safeUrl(node.getAttribute('href'), 'link');
+        if (href) {
+          node.setAttribute('href', href);
+          node.setAttribute('target', '_blank');
+          node.setAttribute('rel', 'noopener noreferrer');
+        } else {
+          node.removeAttribute('href');
+        }
+      }
+
+      if (node.tagName === 'IMG') {
+        const src = safeUrl(node.getAttribute('src'), 'image');
+        if (src) {
+          node.setAttribute('src', src);
+          node.setAttribute('loading', 'lazy');
+          node.setAttribute('referrerpolicy', 'no-referrer');
+        } else {
+          replaceImageWithPlaceholder(node);
+        }
       }
     });
     return template.innerHTML;
   }
 
   function parseColor(color) {
-    const match = color?.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-    return match ? { r: +match[1], g: +match[2], b: +match[3], a: match[4] === undefined ? 1 : +match[4] } : null;
+    const match = color?.match(
+      /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/,
+    );
+    return match
+      ? {
+          r: +match[1],
+          g: +match[2],
+          b: +match[3],
+          a: match[4] === undefined ? 1 : +match[4],
+        }
+      : null;
   }
 
   function luminance({ r, g, b }) {
     const values = [r, g, b].map((value) => {
       const channel = value / 255;
-      return channel <= .03928 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4;
+      return channel <= 0.03928
+        ? channel / 12.92
+        : ((channel + 0.055) / 1.055) ** 2.4;
     });
-    return .2126 * values[0] + .7152 * values[1] + .0722 * values[2];
+    return 0.2126 * values[0] + 0.7152 * values[1] + 0.0722 * values[2];
   }
 
   function contrast(foreground, background) {
     const lighter = Math.max(luminance(foreground), luminance(background));
     const darker = Math.min(luminance(foreground), luminance(background));
-    return (lighter + .05) / (darker + .05);
+    return (lighter + 0.05) / (darker + 0.05);
   }
 
   function getOpaqueBackground(element) {
     let current = element;
     while (current) {
       const color = parseColor(getComputedStyle(current).backgroundColor);
-      if (color && color.a > .9) return color;
+      if (color && color.a > 0.9) return color;
       current = current.parentElement;
     }
     return { r: 255, g: 255, b: 255, a: 1 };
   }
 
+  function getWarningState(compose) {
+    if (!compose) return null;
+    let state = draftWarningStates.get(compose);
+    if (!state) {
+      state = {
+        ignoredIds: new Set(),
+        ignoredFingerprints: new Set(),
+        mutedTypes: new Set(),
+      };
+      draftWarningStates.set(compose, state);
+    }
+    return state;
+  }
+
+  function directText(element) {
+    return [...element.childNodes]
+      .filter((node) => node.nodeType === Node.TEXT_NODE)
+      .map((node) => node.textContent || '')
+      .join(' ')
+      .trim();
+  }
+
+  function nearbyText(node, direction) {
+    let current = node;
+    for (let index = 0; index < 4 && current; index += 1) {
+      current =
+        direction === 'previous'
+          ? current.previousElementSibling
+          : current.nextElementSibling;
+      const text = current?.textContent?.replace(/\s+/g, ' ').trim();
+      if (text) return text.slice(0, 48);
+    }
+    return '';
+  }
+
+  function riskFingerprint(type, anchor, detail = '') {
+    const previous = nearbyText(anchor, 'previous');
+    const next = nearbyText(anchor, 'next');
+    const identity =
+      anchor instanceof HTMLImageElement
+        ? `${anchor.getAttribute('src') || ''}|${anchor.getAttribute('alt') || ''}`
+        : detail || directText(anchor).slice(0, 80);
+    return [type, anchor.tagName, identity, previous, next].join('|');
+  }
+
+  function createRisk(type, anchor, detail = '') {
+    if (!(anchor instanceof Element)) return null;
+    let ids = riskNodeIds.get(anchor);
+    if (!ids) {
+      ids = new Map();
+      riskNodeIds.set(anchor, ids);
+    }
+    const key = `${type}:${detail}`;
+    let id = ids.get(key);
+    if (!id) {
+      riskIdCounter += 1;
+      id = `risk-${riskIdCounter}`;
+      ids.set(key, id);
+    }
+    return {
+      id,
+      type,
+      anchor,
+      fingerprint: riskFingerprint(type, anchor, detail),
+    };
+  }
+
+  function textNodesWithin(editor) {
+    const walker = document.createTreeWalker(
+      editor,
+      globalThis.NodeFilter.SHOW_TEXT,
+    );
+    const nodes = [];
+    while (walker.nextNode() && nodes.length < 1000) {
+      const node = walker.currentNode;
+      if (node.textContent?.trim() && node.parentElement) nodes.push(node);
+    }
+    return nodes;
+  }
+
+  function blankLineAnchors(editor) {
+    const children = [...editor.childNodes];
+    const anchors = [];
+    let start = null;
+    let count = 0;
+    const flush = () => {
+      if (start instanceof Element && count >= 3) anchors.push(start);
+      start = null;
+      count = 0;
+    };
+    children.forEach((child) => {
+      if (child.nodeType === Node.TEXT_NODE && !child.textContent?.trim())
+        return;
+      const blank =
+        (child instanceof Element && child.tagName === 'BR') ||
+        (child instanceof Element &&
+          !child.textContent?.trim() &&
+          !child.querySelector('img, table') &&
+          !child.matches('img, table'));
+      if (blank) {
+        if (!start && child instanceof Element) start = child;
+        count += 1;
+      } else {
+        flush();
+      }
+    });
+    flush();
+    return anchors;
+  }
+
   function auditDraft(editor) {
     const risks = [];
-    const textElements = [editor, ...editor.querySelectorAll('*')].filter((node) => node.textContent?.trim());
-    let hiddenText = false;
-    let lowContrast = false;
-    let tinyText = false;
+    const seen = new Set();
+    const addRisk = (type, anchor, detail = '') => {
+      const risk = createRisk(type, anchor, detail);
+      if (!risk) return;
+      const key = `${risk.type}:${risk.id}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      risks.push(risk);
+    };
 
+    [...editor.querySelectorAll('img[src]')].forEach((node) => {
+      if (isNetworkImageSource(node.getAttribute('src')))
+        addRisk('riskRemoteImage', node);
+    });
+
+    const textElements = [...editor.querySelectorAll('*')].filter(
+      (node) =>
+        directText(node) || (!node.children.length && node.textContent?.trim()),
+    );
     for (const node of textElements.slice(0, 500)) {
       const style = getComputedStyle(node);
       const foreground = parseColor(style.color);
       const background = getOpaqueBackground(node);
-      if (style.display === 'none' || style.visibility === 'hidden' || +style.opacity < .15) hiddenText = true;
-      if (foreground && foreground.a < .2) hiddenText = true;
-      if (foreground && contrast(foreground, background) < 2.2) lowContrast = true;
-      if (parseFloat(style.fontSize) > 0 && parseFloat(style.fontSize) < 9) tinyText = true;
+      if (
+        style.display === 'none' ||
+        style.visibility === 'hidden' ||
+        +style.opacity < 0.15 ||
+        (foreground && foreground.a < 0.2)
+      )
+        addRisk('riskHidden', node);
+      if (foreground && contrast(foreground, background) < 2.2)
+        addRisk('riskContrast', node);
+      if (parseFloat(style.fontSize) > 0 && parseFloat(style.fontSize) < 9)
+        addRisk('riskTiny', node);
     }
 
-    if (hiddenText) risks.push('riskHidden');
-    if (lowContrast) risks.push('riskContrast');
-    if (tinyText) risks.push('riskTiny');
+    blankLineAnchors(editor).forEach((node) =>
+      addRisk('riskBlank', node, 'blank-line-run'),
+    );
 
-    const rawText = editor.innerText || '';
-    if (/\n\s*\n\s*\n\s*\n/.test(rawText)) risks.push('riskBlank');
-    if (/(https?:\/\/|www\.)\S{55,}/i.test(rawText)) risks.push('riskUrl');
-
-    const oversized = [...editor.querySelectorAll('img, table')].some((node) => {
-      const width = parseFloat(node.getAttribute('width')) || node.scrollWidth;
-      return width > DEVICE_PRESETS[viewState.devicePreset].width && getComputedStyle(node).maxWidth === 'none';
+    textNodesWithin(editor).forEach((node) => {
+      const text = node.textContent || '';
+      const url = text.match(/(?:https?:\/\/|www\.)\S{55,}/i)?.[0];
+      if (url) addRisk('riskUrl', node.parentElement, url.slice(0, 100));
+      const withoutUrls = text.replace(/(?:https?:\/\/|www\.)\S+/gi, ' ');
+      const longString = withoutUrls.match(
+        /[A-Za-z0-9][A-Za-z0-9._-]{44,}/,
+      )?.[0];
+      if (longString)
+        addRisk('riskLongString', node.parentElement, longString.slice(0, 100));
     });
-    if (oversized) risks.push('riskOversized');
 
-    return risks.slice(0, 4);
+    [...editor.querySelectorAll('img, table')].forEach((node) => {
+      const widthAttribute = node.getAttribute('width') || '';
+      const explicitWidth = /^\d+(?:\.\d+)?$/.test(widthAttribute.trim())
+        ? Number(widthAttribute)
+        : 0;
+      const intrinsicWidth =
+        node instanceof HTMLImageElement ? node.naturalWidth : 0;
+      const measuredWidth = Math.max(
+        explicitWidth,
+        intrinsicWidth,
+        node.scrollWidth,
+        node.getBoundingClientRect().width,
+      );
+      if (measuredWidth > DEVICE_PRESETS[viewState.devicePreset].width)
+        addRisk('riskOversized', node);
+    });
+
+    return risks;
+  }
+
+  function visibleRisks(editor) {
+    const state = getWarningState(findComposeRoot(editor));
+    return auditDraft(editor)
+      .filter(
+        (risk) =>
+          !state?.mutedTypes.has(risk.type) &&
+          !state?.ignoredIds.has(risk.id) &&
+          !state?.ignoredFingerprints.has(risk.fingerprint),
+      )
+      .slice(0, 8);
   }
 
   function auditStatus(risks) {
     if (!risks.length) return t('looksGood');
-    return risks.length === 1 ? t('issuesOne') : t('issuesMany', { count: risks.length });
+    return risks.length === 1
+      ? t('issuesOne')
+      : t('issuesMany', { count: risks.length });
   }
 
   function riskMarkup(risks) {
-    return risks.map((risk) => `<li>${icons.warning}<span>${t(risk)}</span></li>`).join('');
+    return risks
+      .map(
+        (risk) => `
+          <li data-risk-id="${risk.id}" data-risk-type="${risk.type}">
+            <button type="button" class="grp-risk-location" data-risk-focus="${risk.id}" aria-label="${t('showIssue')}">
+              ${icons.warning}<span>${t(risk.type)}</span>
+            </button>
+            <div class="grp-risk-actions">
+              <button type="button" data-risk-ignore="${risk.id}">${t('ignoreIssue')}</button>
+              <button type="button" data-risk-mute="${risk.type}">${t('muteIssue')}</button>
+            </div>
+          </li>`,
+      )
+      .join('');
   }
 
   function systemChromeMarkup() {
@@ -470,15 +1061,25 @@
   }
 
   function deviceOptionsMarkup() {
-    return Object.entries(DEVICE_PRESETS).map(([key, preset]) =>
-      `<option value="${key}" ${viewState.devicePreset === key ? 'selected' : ''}>${preset.label} · ${preset.width} × ${preset.height}</option>`
-    ).join('');
+    return Object.entries(DEVICE_PRESETS)
+      .map(
+        ([key, preset]) =>
+          `<option value="${key}" ${viewState.devicePreset === key ? 'selected' : ''}>${preset.label} · ${preset.width} × ${preset.height}</option>`,
+      )
+      .join('');
+  }
+
+  function previewSettingsSummary() {
+    if (viewState.device === 'desktop') return t('desktop');
+    return `${DEVICE_PRESETS[viewState.devicePreset].label} · ${viewState.previewScale}%`;
   }
 
   function panelMarkup(draft, risks) {
     const safeSubject = document.createElement('div');
     safeSubject.textContent = draft.subject;
-    const body = draft.body.trim() ? draft.body : `<p class="grp-empty">${t('empty')}</p>`;
+    const body = draft.body.trim()
+      ? draft.body
+      : `<p class="grp-empty">${t('empty')}</p>`;
 
     return `
       <aside class="grp-panel" role="complementary" aria-labelledby="grp-title">
@@ -515,6 +1116,9 @@
               <button type="button" data-theme="dark" aria-pressed="${viewState.theme === 'dark'}">${t('dark')}</button>
             </div>
           </div>
+          <details class="grp-preview-details" data-preview-details ${viewState.controlsCollapsed ? '' : 'open'}>
+            <summary><span>${t('previewSettings')}</span><span class="grp-details-summary" data-details-summary>${previewSettingsSummary()}</span></summary>
+            <div class="grp-detail-controls">
           <div class="grp-preset-control" data-preset-control ${viewState.device === 'desktop' ? 'hidden' : ''}>
             <label for="grp-device-preset">${t('referenceDevice')}</label>
             <div class="grp-device-select-shell">
@@ -534,12 +1138,15 @@
             </div>
             <div class="grp-scale-control">
               <button type="button" class="grp-scale-step" data-scale-step="-10" aria-label="${t('decreaseScale')}">${icons.minus}</button>
-              <input id="grp-preview-scale" type="range" min="10" max="100" step="1" value="${viewState.previewScale}" style="--grp-scale-progress:${(viewState.previewScale - 10) / 90 * 100}%" data-preview-scale>
+              <input id="grp-preview-scale" type="range" min="10" max="100" step="1" value="${viewState.previewScale}" style="--grp-scale-progress:${((viewState.previewScale - 10) / 90) * 100}%" data-preview-scale>
               <button type="button" class="grp-scale-step" data-scale-step="10" aria-label="${t('increaseScale')}">${icons.plus}</button>
               <output for="grp-preview-scale" data-preview-scale-output>${viewState.previewScale}%</output>
             </div>
             <p class="grp-reference-scale-note">${t('referenceScaleNote')}</p>
           </div>
+          <p class="grp-preview-limit">${t('previewLimit')}</p>
+            </div>
+          </details>
         </header>
         <div class="grp-stage">
           <p class="grp-scroll-hint">${t('scrollHint')}</p>
@@ -563,7 +1170,7 @@
           </div>
         </div>
         <footer class="grp-audit ${risks.length ? 'grp-has-risks' : ''}">
-          <div class="grp-audit-summary"><div class="grp-audit-status"><span class="grp-status-dot"></span><span data-audit-status>${auditStatus(risks)}</span></div><span class="grp-privacy">${t('processed')}</span></div>
+          <div class="grp-audit-summary"><div class="grp-audit-status" role="status" aria-live="polite" aria-atomic="true"><span class="grp-status-dot"></span><span data-audit-status>${auditStatus(risks)}</span></div><div class="grp-audit-meta"><button type="button" data-risk-reset ${warningOverridesActive() ? '' : 'hidden'}>${t('restoreWarnings')}</button><span class="grp-privacy">${t('processed')}</span></div></div>
           <ul class="grp-risk-list" data-risk-list>${riskMarkup(risks)}</ul>
         </footer>
       </aside>`;
@@ -571,13 +1178,18 @@
 
   function renderPreviewPanel(root) {
     if (!activeEditor?.isConnected) return;
-    const draft = getDraft(activeEditor);
-    const risks = auditDraft(activeEditor);
+    const risks = visibleRisks(activeEditor);
+    const draft = getDraft(activeEditor, risks);
     root.innerHTML = panelMarkup(draft, risks);
+    activeRisksById = new Map(risks.map((risk) => [risk.id, risk]));
     bindPanelEvents(root);
     applyFloatingLayout(root);
     updateFloatingExitControl(root);
-    if (!viewState.floating && viewState.device === 'mobile' && viewState.previewScalePreset === 'fit') {
+    if (
+      !viewState.floating &&
+      viewState.device === 'mobile' &&
+      viewState.previewScalePreset === 'fit'
+    ) {
       requestAnimationFrame(() => fitPreviewToStage(root));
     }
   }
@@ -586,37 +1198,190 @@
     const panel = root.querySelector('.grp-panel');
     panel?.addEventListener('pointerdown', (event) => event.stopPropagation());
     panel?.addEventListener('click', (event) => event.stopPropagation());
-    root.querySelectorAll('[data-close]').forEach((button) => button.addEventListener('click', closePreview));
-    root.querySelector('[data-floating-enter]')?.addEventListener('click', () => setFloatingMode(root, true));
-    root.querySelector('[data-floating-exit]')?.addEventListener('click', () => setFloatingMode(root, false));
-    root.querySelectorAll('[data-device]').forEach((button) => button.addEventListener('click', () => setDevice(root, button.dataset.device)));
-    root.querySelectorAll('[data-theme]').forEach((button) => button.addEventListener('click', () => setTheme(root, button.dataset.theme)));
-    root.querySelector('[data-device-preset]')?.addEventListener('change', (event) => setDevicePreset(root, event.target.value));
-    root.querySelector('[data-settings-button]')?.addEventListener('click', () => toggleSettings(root));
-    root.querySelectorAll('[data-locale]').forEach((button) => button.addEventListener('click', (event) => {
-      event.preventDefault();
-      setLocale(button.dataset.locale);
-    }));
+    root
+      .querySelectorAll('[data-close]')
+      .forEach((button) => button.addEventListener('click', closePreview));
+    root
+      .querySelector('[data-floating-enter]')
+      ?.addEventListener('click', () => setFloatingMode(root, true));
+    root
+      .querySelector('[data-floating-exit]')
+      ?.addEventListener('click', () => setFloatingMode(root, false));
+    root
+      .querySelectorAll('[data-device]')
+      .forEach((button) =>
+        button.addEventListener('click', () =>
+          setDevice(root, button.dataset.device),
+        ),
+      );
+    root
+      .querySelectorAll('[data-theme]')
+      .forEach((button) =>
+        button.addEventListener('click', () =>
+          setTheme(root, button.dataset.theme),
+        ),
+      );
+    root
+      .querySelector('[data-device-preset]')
+      ?.addEventListener('change', (event) =>
+        setDevicePreset(root, event.target.value),
+      );
+    root
+      .querySelector('[data-preview-details]')
+      ?.addEventListener('toggle', (event) => {
+        viewState.controlsCollapsed = !event.currentTarget.open;
+        if (
+          !viewState.controlsCollapsed &&
+          viewState.device === 'mobile' &&
+          viewState.previewScalePreset === 'fit'
+        ) {
+          requestAnimationFrame(() => fitPreviewToStage(root));
+        }
+      });
+    root
+      .querySelector('[data-settings-button]')
+      ?.addEventListener('click', () => toggleSettings(root));
+    root.querySelectorAll('[data-locale]').forEach((button) =>
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        setLocale(button.dataset.locale);
+      }),
+    );
     const scaleInput = root.querySelector('[data-preview-scale]');
-    scaleInput?.addEventListener('input', (event) => setPreviewScale(root, event.target.value, false, 'custom'));
-    scaleInput?.addEventListener('change', (event) => setPreviewScale(root, event.target.value, true, 'custom'));
-    root.querySelectorAll('[data-scale-step]').forEach((button) => button.addEventListener('click', () => {
-      setPreviewScale(root, viewState.previewScale + Number(button.dataset.scaleStep), true, 'custom');
-    }));
-    root.querySelectorAll('[data-scale-preset]').forEach((button) => button.addEventListener('click', () => {
-      applyPreviewScalePreset(root, button.dataset.scalePreset);
-    }));
+    scaleInput?.addEventListener('input', (event) =>
+      setPreviewScale(root, event.target.value, false, 'custom'),
+    );
+    scaleInput?.addEventListener('change', (event) =>
+      setPreviewScale(root, event.target.value, true, 'custom'),
+    );
+    root.querySelectorAll('[data-scale-step]').forEach((button) =>
+      button.addEventListener('click', () => {
+        setPreviewScale(
+          root,
+          viewState.previewScale + Number(button.dataset.scaleStep),
+          true,
+          'custom',
+        );
+      }),
+    );
+    root.querySelectorAll('[data-scale-preset]').forEach((button) =>
+      button.addEventListener('click', () => {
+        applyPreviewScalePreset(root, button.dataset.scalePreset);
+      }),
+    );
     const floatingScale = root.querySelector('[data-floating-scale]');
-    floatingScale?.addEventListener('input', (event) => setFloatingScale(root, event.target.value, false));
-    floatingScale?.addEventListener('change', (event) => setFloatingScale(root, event.target.value, true));
+    floatingScale?.addEventListener('input', (event) =>
+      setFloatingScale(root, event.target.value, false),
+    );
+    floatingScale?.addEventListener('change', (event) =>
+      setFloatingScale(root, event.target.value, true),
+    );
+    bindRiskEvents(root);
     bindFloatingDrag(root);
+  }
+
+  function warningOverridesActive() {
+    const state = getWarningState(activeCompose);
+    return Boolean(
+      state &&
+      (state.ignoredIds.size ||
+        state.ignoredFingerprints.size ||
+        state.mutedTypes.size),
+    );
+  }
+
+  function clearRiskHighlight(root) {
+    root
+      .querySelectorAll('.grp-risk-highlight')
+      .forEach((node) => node.classList.remove('grp-risk-highlight'));
+  }
+
+  function highlightRisk(root, riskId, shouldScroll = false) {
+    clearRiskHighlight(root);
+    if (!riskId) return;
+    const targets = root.querySelectorAll(
+      `[data-grp-risk-anchor~="${riskId}"]`,
+    );
+    targets.forEach((target) => target.classList.add('grp-risk-highlight'));
+    if (shouldScroll && targets[0] instanceof Element) {
+      const reduceMotion = globalThis.matchMedia?.(
+        '(prefers-reduced-motion: reduce)',
+      ).matches;
+      targets[0].scrollIntoView({
+        behavior: reduceMotion ? 'auto' : 'smooth',
+        block: 'center',
+        inline: 'nearest',
+      });
+    }
+  }
+
+  function bindRiskEvents(root) {
+    const audit = root.querySelector('.grp-audit');
+    if (!audit) return;
+    const riskRow = (target) =>
+      target instanceof Element ? target.closest('[data-risk-id]') : null;
+
+    audit.addEventListener('pointerover', (event) => {
+      const row = riskRow(event.target);
+      if (row) highlightRisk(root, row.getAttribute('data-risk-id'));
+    });
+    audit.addEventListener('pointerout', (event) => {
+      const row = riskRow(event.target);
+      if (!row) return;
+      const next = event.relatedTarget;
+      if (!(next instanceof Node) || !row.contains(next))
+        clearRiskHighlight(root);
+    });
+    audit.addEventListener('focusin', (event) => {
+      const row = riskRow(event.target);
+      if (row) highlightRisk(root, row.getAttribute('data-risk-id'));
+    });
+    audit.addEventListener('focusout', (event) => {
+      const row = riskRow(event.target);
+      if (!row) return;
+      const next = event.relatedTarget;
+      if (!(next instanceof Node) || !row.contains(next))
+        clearRiskHighlight(root);
+    });
+    audit.addEventListener('click', (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const focusButton = target?.closest('[data-risk-focus]');
+      if (focusButton) {
+        highlightRisk(root, focusButton.dataset.riskFocus, true);
+        return;
+      }
+      const state = getWarningState(activeCompose);
+      if (!state) return;
+      const ignoreButton = target?.closest('[data-risk-ignore]');
+      if (ignoreButton) {
+        const risk = activeRisksById.get(ignoreButton.dataset.riskIgnore);
+        if (!risk) return;
+        state.ignoredIds.add(risk.id);
+        state.ignoredFingerprints.add(risk.fingerprint);
+        refreshPreview();
+        return;
+      }
+      const muteButton = target?.closest('[data-risk-mute]');
+      if (muteButton) {
+        state.mutedTypes.add(muteButton.dataset.riskMute);
+        refreshPreview();
+        return;
+      }
+      if (target?.closest('[data-risk-reset]')) {
+        state.ignoredIds.clear();
+        state.ignoredFingerprints.clear();
+        state.mutedTypes.clear();
+        refreshPreview();
+      }
+    });
   }
 
   function composeRequiresFloating(compose) {
     if (!compose?.isConnected) return false;
     const rect = compose.getBoundingClientRect();
-    const nearViewportHeight = rect.height >= Math.max(620, window.innerHeight * .78);
-    const wideCompose = rect.width >= Math.max(760, window.innerWidth * .56);
+    const nearViewportHeight =
+      rect.height >= Math.max(620, window.innerHeight * 0.78);
+    const wideCompose = rect.width >= Math.max(760, window.innerWidth * 0.56);
     return nearViewportHeight || wideCompose;
   }
 
@@ -631,12 +1396,21 @@
   }
 
   function isComposeWindowControl(target) {
-    const control = target instanceof Element ? target.closest('button, [role="button"]') : null;
+    const control =
+      target instanceof Element
+        ? target.closest('button, [role="button"]')
+        : null;
     if (!control) return false;
-    const label = [control.getAttribute('aria-label'), control.getAttribute('data-tooltip'), control.getAttribute('title')]
+    const label = [
+      control.getAttribute('aria-label'),
+      control.getAttribute('data-tooltip'),
+      control.getAttribute('title'),
+    ]
       .filter(Boolean)
       .join(' ');
-    return /(full\s?screen|exit\s?full\s?screen|maximi[sz]e|minimi[sz]e|pop.?out|全螢幕|全屏|退出全螢幕|放大|縮小|彈出)/i.test(label);
+    return /(full\s?screen|exit\s?full\s?screen|maximi[sz]e|minimi[sz]e|pop.?out|全螢幕|全屏|退出全螢幕|放大|縮小|彈出)/i.test(
+      label,
+    );
   }
 
   function bindComposeLayoutGuard(compose, root) {
@@ -651,7 +1425,13 @@
       composeLayoutObserver = new ResizeObserver(() => {
         requestAnimationFrame(() => {
           if (!compose.isConnected || !root.isConnected) return;
-          if (!viewState.floating && !viewState.fullPanelOverride && composeRequiresFloating(compose)) setFloatingMode(root, true);
+          if (
+            !viewState.floating &&
+            !viewState.fullPanelOverride &&
+            composeRequiresFloating(compose)
+          )
+            setFloatingMode(root, true);
+          scheduleComposeTraySafeArea(root);
           updateFloatingExitControl(root);
         });
       });
@@ -659,8 +1439,45 @@
     }
   }
 
+  function bindActiveDraftTargets() {
+    if (!activeCompose?.isConnected) return false;
+    const nextEditor = findEditorInCompose(activeCompose, activeEditor);
+    if (!nextEditor) return false;
+    if (nextEditor !== activeEditor) {
+      activeEditor?.removeEventListener('input', scheduleRefresh);
+      activeEditor = nextEditor;
+      activeEditor.addEventListener('input', scheduleRefresh);
+    }
+
+    const nextSubjectInput = findSubjectInput(activeCompose);
+    if (nextSubjectInput !== activeSubjectInput) {
+      activeSubjectInput?.removeEventListener('input', scheduleRefresh);
+      activeSubjectInput = nextSubjectInput;
+      activeSubjectInput?.addEventListener('input', scheduleRefresh);
+    }
+    return true;
+  }
+
+  function draftMutationIsRelevant(mutation) {
+    if (
+      mutation.target === activeEditor ||
+      activeEditor?.contains(mutation.target)
+    )
+      return true;
+    if (mutation.target === activeSubjectInput) return true;
+    if (mutation.type !== 'childList') return false;
+    return [...mutation.addedNodes, ...mutation.removedNodes].some((node) => {
+      if (node === activeEditor || node === activeSubjectInput) return true;
+      if (!(node instanceof Element)) return false;
+      return (
+        node.matches('div[contenteditable="true"], input') ||
+        Boolean(node.querySelector('div[contenteditable="true"], input'))
+      );
+    });
+  }
+
   function openPreview(editor) {
-    closePreview();
+    closePreview(false);
     activeEditor = editor;
     activeCompose = findComposeRoot(editor);
     viewState.floating = composeRequiresFloating(activeCompose);
@@ -669,21 +1486,65 @@
     root.lang = currentLocale;
     document.body.appendChild(root);
     renderPreviewPanel(root);
+    scheduleComposeTraySafeArea(root);
     if (!viewState.floating) arrangeComposeForLivePreview(editor, root);
     bindComposeLayoutGuard(activeCompose, root);
     updateFloatingExitControl(root);
 
     document.addEventListener('keydown', onEscape);
     editor.addEventListener('input', scheduleRefresh);
-    activeCompose?.querySelector('input[name="subjectbox"]')?.addEventListener('input', scheduleRefresh);
-    activeDraftObserver = new MutationObserver(scheduleRefresh);
-    activeDraftObserver.observe(editor, {
+    activeSubjectInput = findSubjectInput(activeCompose);
+    activeSubjectInput?.addEventListener('input', scheduleRefresh);
+    activeDraftObserver = new MutationObserver((mutations) => {
+      if (!bindActiveDraftTargets()) {
+        closePreview(false);
+        return;
+      }
+      if (mutations.some(draftMutationIsRelevant)) scheduleRefresh();
+    });
+    activeDraftObserver.observe(activeCompose, {
       attributes: true,
       characterData: true,
       childList: true,
-      subtree: true
+      subtree: true,
     });
     window.addEventListener('resize', scheduleLiveLayout);
+  }
+
+  function getComposeTraySafeArea() {
+    const trayHeights = [...document.querySelectorAll('[role="dialog"]')]
+      .filter((dialog) => !dialog.closest(`#${ROOT_ID}`))
+      .map((dialog) => {
+        const rect = dialog.getBoundingClientRect();
+        const style = getComputedStyle(dialog);
+        const visible =
+          style.display !== 'none' &&
+          style.visibility !== 'hidden' &&
+          rect.width >= 160 &&
+          rect.height >= 28;
+        const compact = rect.height <= 96;
+        const dockedToBottom =
+          rect.bottom >= window.innerHeight - 16 &&
+          rect.top < window.innerHeight;
+        return visible && compact && dockedToBottom
+          ? Math.ceil(window.innerHeight - rect.top + 8)
+          : 0;
+      });
+    return Math.min(104, Math.max(0, ...trayHeights));
+  }
+
+  function scheduleComposeTraySafeArea(
+    root = document.getElementById(ROOT_ID),
+  ) {
+    if (!root?.isConnected || composeTrayFrame !== null) return;
+    composeTrayFrame = requestAnimationFrame(() => {
+      composeTrayFrame = null;
+      if (!root.isConnected) return;
+      root.style.setProperty(
+        '--grp-compose-tray-safe-area',
+        `${getComposeTraySafeArea()}px`,
+      );
+    });
   }
 
   function arrangeComposeForLivePreview(editor, previewRoot) {
@@ -695,24 +1556,33 @@
       return;
     }
     const composeRect = compose.getBoundingClientRect();
-    const panelWidth = previewRoot.querySelector('.grp-panel')?.getBoundingClientRect().width || 560;
+    const panelWidth =
+      previewRoot.querySelector('.grp-panel')?.getBoundingClientRect().width ||
+      560;
     const gap = panelWidth < 500 ? 12 : 20;
     const targetRight = panelWidth + gap;
-    const currentRightMargin = Math.max(0, window.innerWidth - composeRect.right);
-    const canMoveWithoutResize = window.innerWidth >= composeRect.width + panelWidth + gap + currentRightMargin;
-    const widthAtCurrentLeft = window.innerWidth - targetRight - composeRect.left;
+    const currentRightMargin = Math.max(
+      0,
+      window.innerWidth - composeRect.right,
+    );
+    const canMoveWithoutResize =
+      window.innerWidth >=
+      composeRect.width + panelWidth + gap + currentRightMargin;
+    const widthAtCurrentLeft =
+      window.innerWidth - targetRight - composeRect.left;
     const canSplitAtCurrentLeft = widthAtCurrentLeft >= 480;
     const fallbackLeft = Math.min(composeRect.left, 12);
     const fallbackWidth = window.innerWidth - targetRight - fallbackLeft;
     const canUseCompactSplit = window.innerWidth >= 720 && fallbackWidth >= 340;
-    if (!canMoveWithoutResize && !canSplitAtCurrentLeft && !canUseCompactSplit) return;
+    if (!canMoveWithoutResize && !canSplitAtCurrentLeft && !canUseCompactSplit)
+      return;
 
     shiftedCompose = {
       element: compose,
       inlineLeft: compose.style.left,
       inlineRight: compose.style.right,
       inlineWidth: compose.style.width,
-      inlineTransition: compose.style.transition
+      inlineTransition: compose.style.transition,
     };
     compose.style.transition = 'right 180ms cubic-bezier(.2, 0, 0, 1)';
     if (!canMoveWithoutResize) {
@@ -733,7 +1603,9 @@
     shiftedCompose.element.style.right = shiftedCompose.inlineRight;
     shiftedCompose.element.style.width = shiftedCompose.inlineWidth;
     shiftedCompose.element.style.transition = shiftedCompose.inlineTransition;
-    shiftedCompose.element.querySelector(`.${BUTTON_CLASS}`)?._grpReposition?.();
+    shiftedCompose.element
+      .querySelector(`.${BUTTON_CLASS}`)
+      ?._grpReposition?.();
     shiftedCompose = null;
   }
 
@@ -744,7 +1616,11 @@
       const previewRoot = document.getElementById(ROOT_ID);
       if (!previewRoot || !activeEditor?.isConnected) return;
       restoreComposeLayout();
-      if (!viewState.floating && !viewState.fullPanelOverride && composeRequiresFloating(activeCompose)) {
+      if (
+        !viewState.floating &&
+        !viewState.fullPanelOverride &&
+        composeRequiresFloating(activeCompose)
+      ) {
         setFloatingMode(previewRoot, true);
         return;
       }
@@ -753,7 +1629,12 @@
       } else {
         arrangeComposeForLivePreview(activeEditor, previewRoot);
       }
-      if (!viewState.floating && viewState.device === 'mobile' && viewState.previewScalePreset === 'fit') {
+      scheduleComposeTraySafeArea(previewRoot);
+      if (
+        !viewState.floating &&
+        viewState.device === 'mobile' &&
+        viewState.previewScalePreset === 'fit'
+      ) {
         fitPreviewToStage(previewRoot);
       }
     });
@@ -770,17 +1651,29 @@
     const renderedWidth = Math.min(desiredWidth, window.innerWidth - 16);
     const renderedHeight = Math.min(desiredHeight, window.innerHeight - 16);
     panel.style.setProperty('--grp-floating-panel-width', `${desiredWidth}px`);
-    panel.style.setProperty('--grp-floating-panel-height', `${desiredHeight}px`);
+    panel.style.setProperty(
+      '--grp-floating-panel-height',
+      `${desiredHeight}px`,
+    );
 
     if (viewState.floatingPosition) {
-      const left = Math.min(Math.max(8, window.innerWidth - renderedWidth - 8), Math.max(8, viewState.floatingPosition.left));
-      const top = Math.min(Math.max(8, window.innerHeight - renderedHeight - 8), Math.max(8, viewState.floatingPosition.top));
+      const left = Math.min(
+        Math.max(8, window.innerWidth - renderedWidth - 8),
+        Math.max(8, viewState.floatingPosition.left),
+      );
+      const top = Math.min(
+        Math.max(8, window.innerHeight - renderedHeight - 8),
+        Math.max(8, viewState.floatingPosition.top),
+      );
       viewState.floatingPosition = { left, top };
       panel.style.left = `${left}px`;
       panel.style.top = `${top}px`;
       panel.style.right = 'auto';
     } else {
-      const top = Math.min(72, Math.max(8, window.innerHeight - renderedHeight - 8));
+      const top = Math.min(
+        72,
+        Math.max(8, window.innerHeight - renderedHeight - 8),
+      );
       panel.style.left = '';
       panel.style.top = `${top}px`;
       panel.style.right = `${Math.min(24, Math.max(8, window.innerWidth - renderedWidth - 8))}px`;
@@ -796,7 +1689,10 @@
 
     if (viewState.floating) {
       device.classList.remove('grp-desktop');
-      device.style.setProperty('--grp-scale', String(viewState.floatingScale / 100));
+      device.style.setProperty(
+        '--grp-scale',
+        String(viewState.floatingScale / 100),
+      );
       if (appBar) appBar.innerHTML = appBarMarkup('mobile');
       updateFloatingPanelSize(root);
     } else {
@@ -804,7 +1700,12 @@
       panel.style.top = '';
       panel.style.right = '';
       device.classList.toggle('grp-desktop', viewState.device === 'desktop');
-      device.style.setProperty('--grp-scale', String(viewState.device === 'desktop' ? 1 : viewState.previewScale / 100));
+      device.style.setProperty(
+        '--grp-scale',
+        String(
+          viewState.device === 'desktop' ? 1 : viewState.previewScale / 100,
+        ),
+      );
       if (appBar) appBar.innerHTML = appBarMarkup(viewState.device);
     }
   }
@@ -817,12 +1718,16 @@
       restoreComposeLayout();
     }
     applyFloatingLayout(root);
-    if (!enabled && activeEditor?.isConnected) arrangeComposeForLivePreview(activeEditor, root);
+    if (!enabled && activeEditor?.isConnected)
+      arrangeComposeForLivePreview(activeEditor, root);
     updateFloatingExitControl(root);
   }
 
   function setFloatingScale(root, requestedScale, commit = false) {
-    const scale = Math.min(100, Math.max(20, Math.round(Number(requestedScale))));
+    const scale = Math.min(
+      100,
+      Math.max(20, Math.round(Number(requestedScale))),
+    );
     if (!Number.isFinite(scale)) return;
     viewState.floatingScale = scale;
     const range = root.querySelector('[data-floating-scale]');
@@ -833,7 +1738,9 @@
     scaleFrame = requestAnimationFrame(() => {
       scaleFrame = null;
       if (!viewState.floating) return;
-      root.querySelector('[data-preview-device]')?.style.setProperty('--grp-scale', String(scale / 100));
+      root
+        .querySelector('[data-preview-device]')
+        ?.style.setProperty('--grp-scale', String(scale / 100));
       if (commit) updateFloatingPanelSize(root);
     });
   }
@@ -844,7 +1751,8 @@
     if (!handle || !panel) return;
 
     handle.addEventListener('pointerdown', (event) => {
-      if (!viewState.floating || event.target.closest('button, input, label')) return;
+      if (!viewState.floating || event.target.closest('button, input, label'))
+        return;
       event.preventDefault();
       const startRect = panel.getBoundingClientRect();
       const startX = event.clientX;
@@ -855,12 +1763,21 @@
       const move = (moveEvent) => {
         const maxLeft = Math.max(8, window.innerWidth - startRect.width - 8);
         const maxTop = Math.max(8, window.innerHeight - startRect.height - 8);
-        const left = Math.min(maxLeft, Math.max(8, startRect.left + moveEvent.clientX - startX));
-        const top = Math.min(maxTop, Math.max(8, startRect.top + moveEvent.clientY - startY));
+        const left = Math.min(
+          maxLeft,
+          Math.max(8, startRect.left + moveEvent.clientX - startX),
+        );
+        const top = Math.min(
+          maxTop,
+          Math.max(8, startRect.top + moveEvent.clientY - startY),
+        );
         panel.style.left = `${Math.round(left)}px`;
         panel.style.top = `${Math.round(top)}px`;
         panel.style.right = 'auto';
-        viewState.floatingPosition = { left: Math.round(left), top: Math.round(top) };
+        viewState.floatingPosition = {
+          left: Math.round(left),
+          top: Math.round(top),
+        };
       };
 
       const end = () => {
@@ -878,8 +1795,17 @@
 
   function setDevice(root, device) {
     viewState.device = device;
-    root.querySelectorAll('[data-device]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.device === device)));
-    root.querySelector('[data-preview-device]')?.classList.toggle('grp-desktop', device === 'desktop');
+    root
+      .querySelectorAll('[data-device]')
+      .forEach((button) =>
+        button.setAttribute(
+          'aria-pressed',
+          String(button.dataset.device === device),
+        ),
+      );
+    root
+      .querySelector('[data-preview-device]')
+      ?.classList.toggle('grp-desktop', device === 'desktop');
     const presetControl = root.querySelector('[data-preset-control]');
     if (presetControl) presetControl.hidden = device === 'desktop';
     const scaleControl = root.querySelector('[data-scale-control]');
@@ -887,15 +1813,27 @@
     const scrollHint = root.querySelector('.grp-scroll-hint');
     if (scrollHint) scrollHint.hidden = device === 'desktop';
     const previewDevice = root.querySelector('[data-preview-device]');
-    previewDevice?.style.setProperty('--grp-scale', String(device === 'desktop' ? 1 : viewState.previewScale / 100));
+    previewDevice?.style.setProperty(
+      '--grp-scale',
+      String(device === 'desktop' ? 1 : viewState.previewScale / 100),
+    );
     const appBar = root.querySelector('[data-app-bar]');
     if (appBar) appBar.innerHTML = appBarMarkup();
-    if (device === 'mobile' && viewState.previewScalePreset === 'fit') requestAnimationFrame(() => fitPreviewToStage(root));
+    updatePreviewSettingsSummary(root);
+    if (device === 'mobile' && viewState.previewScalePreset === 'fit')
+      requestAnimationFrame(() => fitPreviewToStage(root));
   }
 
   function setTheme(root, theme) {
     viewState.theme = theme;
-    root.querySelectorAll('[data-theme]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.theme === theme)));
+    root
+      .querySelectorAll('[data-theme]')
+      .forEach((button) =>
+        button.setAttribute(
+          'aria-pressed',
+          String(button.dataset.theme === theme),
+        ),
+      );
     const device = root.querySelector('[data-preview-device]');
     device?.classList.toggle('grp-theme-dark', theme === 'dark');
     device?.classList.toggle('grp-theme-light', theme === 'light');
@@ -910,31 +1848,55 @@
     const osLabel = root.querySelector('.grp-selected-os');
     if (osLabel) osLabel.textContent = preset.os === 'ios' ? 'iOS' : 'Android';
     const referenceKind = root.querySelector('[data-reference-kind]');
-    if (referenceKind) referenceKind.textContent = preset.os === 'ios' ? t('iosReference') : t('androidReference');
+    if (referenceKind)
+      referenceKind.textContent =
+        preset.os === 'ios' ? t('iosReference') : t('androidReference');
     const device = root.querySelector('[data-preview-device]');
     device?.setAttribute('data-os', preset.os);
     device?.setAttribute('data-cutout', preset.cutout);
     device?.style.setProperty('--grp-mobile-width', `${preset.width}px`);
     device?.style.setProperty('--grp-mobile-height', `${preset.height}px`);
     if (viewState.floating) updateFloatingPanelSize(root);
-    if (!viewState.floating && viewState.previewScalePreset === 'fit') requestAnimationFrame(() => fitPreviewToStage(root));
+    if (!viewState.floating && viewState.previewScalePreset === 'fit')
+      requestAnimationFrame(() => fitPreviewToStage(root));
+    updatePreviewSettingsSummary(root);
     storageSet({ [STORAGE_KEYS.devicePreset]: presetKey });
     refreshPreview();
   }
 
   function updateScalePresetControls(root) {
     root.querySelectorAll('[data-scale-preset]').forEach((button) => {
-      button.setAttribute('aria-pressed', String(button.dataset.scalePreset === viewState.previewScalePreset));
+      button.setAttribute(
+        'aria-pressed',
+        String(button.dataset.scalePreset === viewState.previewScalePreset),
+      );
     });
+  }
+
+  function updatePreviewSettingsSummary(root) {
+    const summary = root.querySelector('[data-details-summary]');
+    if (summary) summary.textContent = previewSettingsSummary();
   }
 
   function fitPreviewToStage(root) {
     const stage = root.querySelector('.grp-stage');
     const preset = DEVICE_PRESETS[viewState.devicePreset];
-    if (!stage || !preset || viewState.device !== 'mobile' || viewState.floating) return;
+    if (
+      !stage ||
+      !preset ||
+      viewState.device !== 'mobile' ||
+      viewState.floating
+    )
+      return;
     const availableWidth = Math.max(1, stage.clientWidth - 40);
     const availableHeight = Math.max(1, stage.clientHeight - 56);
-    const fittedScale = Math.floor(Math.min(1, availableWidth / preset.width, availableHeight / preset.height) * 100);
+    const fittedScale = Math.floor(
+      Math.min(
+        1,
+        availableWidth / preset.width,
+        availableHeight / preset.height,
+      ) * 100,
+    );
     setPreviewScale(root, fittedScale, false, 'fit');
   }
 
@@ -950,23 +1912,40 @@
     setPreviewScale(root, scale, true, preset);
   }
 
-  function setPreviewScale(root, requestedScale, persist = false, preset = 'custom') {
-    const scale = Math.min(100, Math.max(10, Math.round(Number(requestedScale))));
+  function setPreviewScale(
+    root,
+    requestedScale,
+    persist = false,
+    preset = 'custom',
+  ) {
+    const scale = Math.min(
+      100,
+      Math.max(10, Math.round(Number(requestedScale))),
+    );
     if (!Number.isFinite(scale)) return;
     viewState.previewScale = scale;
     viewState.previewScalePreset = preset;
     const range = root.querySelector('[data-preview-scale]');
     const output = root.querySelector('[data-preview-scale-output]');
     if (range) range.value = String(scale);
-    if (range) range.style.setProperty('--grp-scale-progress', `${(scale - 10) / 90 * 100}%`);
+    if (range)
+      range.style.setProperty(
+        '--grp-scale-progress',
+        `${((scale - 10) / 90) * 100}%`,
+      );
     if (output) output.textContent = `${scale}%`;
     updateScalePresetControls(root);
+    updatePreviewSettingsSummary(root);
     if (scaleFrame !== null) cancelAnimationFrame(scaleFrame);
     scaleFrame = requestAnimationFrame(() => {
       scaleFrame = null;
-      if (viewState.device === 'mobile') root.querySelector('[data-preview-device]')?.style.setProperty('--grp-scale', String(scale / 100));
+      if (viewState.device === 'mobile')
+        root
+          .querySelector('[data-preview-device]')
+          ?.style.setProperty('--grp-scale', String(scale / 100));
     });
-    if (persist) storageSet({ [STORAGE_KEYS.previewScale]: scale }).catch(() => {});
+    if (persist)
+      storageSet({ [STORAGE_KEYS.previewScale]: scale }).catch(() => {});
   }
 
   function toggleSettings(root) {
@@ -976,6 +1955,11 @@
     const shouldOpen = menu.hidden;
     menu.hidden = !shouldOpen;
     button.setAttribute('aria-expanded', String(shouldOpen));
+    if (shouldOpen) {
+      menu.querySelector('[aria-checked="true"]')?.focus();
+    } else {
+      button.focus();
+    }
   }
 
   function setLocale(locale) {
@@ -986,6 +1970,8 @@
     if (root && activeEditor?.isConnected) {
       root.lang = locale;
       renderPreviewPanel(root);
+      const settingsButton = root.querySelector('[data-settings-button]');
+      if (settingsButton instanceof HTMLElement) settingsButton.focus();
     }
     storageSet({ [STORAGE_KEYS.locale]: locale }).catch(() => {});
   }
@@ -998,13 +1984,23 @@
   function refreshPreview() {
     const root = document.getElementById(ROOT_ID);
     if (!root || !activeEditor?.isConnected) return;
-    const draft = getDraft(activeEditor);
-    const risks = auditDraft(activeEditor);
+    const risks = visibleRisks(activeEditor);
+    const draft = getDraft(activeEditor, risks);
+    activeRisksById = new Map(risks.map((risk) => [risk.id, risk]));
     root.querySelector('[data-preview-subject]').textContent = draft.subject;
-    root.querySelector('[data-preview-body]').innerHTML = draft.body.trim() ? draft.body : `<p class="grp-empty">${t('empty')}</p>`;
+    root.querySelector('[data-preview-body]').innerHTML = draft.body.trim()
+      ? draft.body
+      : `<p class="grp-empty">${t('empty')}</p>`;
     root.querySelector('[data-audit-status]').textContent = auditStatus(risks);
     root.querySelector('[data-risk-list]').innerHTML = riskMarkup(risks);
-    root.querySelector('.grp-audit').classList.toggle('grp-has-risks', risks.length > 0);
+    const reset = root.querySelector('[data-risk-reset]');
+    if (reset instanceof HTMLElement) {
+      reset.hidden = !warningOverridesActive();
+      reset.textContent = t('restoreWarnings');
+    }
+    root
+      .querySelector('.grp-audit')
+      .classList.toggle('grp-has-risks', risks.length > 0);
   }
 
   function onEscape(event) {
@@ -1013,20 +2009,27 @@
     if (!eventTarget?.closest(`#${ROOT_ID}`)) return;
     const menu = root?.querySelector('[data-settings-menu]');
     if (event.key !== 'Escape') return;
-    if (menu && !menu.hidden) {
+    if (menu instanceof HTMLElement && !menu.hidden) {
       menu.hidden = true;
-      root.querySelector('[data-settings-button]')?.setAttribute('aria-expanded', 'false');
+      const settingsButton = root.querySelector('[data-settings-button]');
+      settingsButton?.setAttribute('aria-expanded', 'false');
+      if (settingsButton instanceof HTMLElement) settingsButton.focus();
       return;
     }
     closePreview();
   }
 
-  function closePreview() {
+  function closePreview(restoreFocus = true) {
+    const editorToFocus = activeEditor;
     document.getElementById(ROOT_ID)?.remove();
+    clearTimeout(refreshTimer);
+    refreshTimer = null;
     if (layoutFrame !== null) cancelAnimationFrame(layoutFrame);
     if (scaleFrame !== null) cancelAnimationFrame(scaleFrame);
+    if (composeTrayFrame !== null) cancelAnimationFrame(composeTrayFrame);
     layoutFrame = null;
     scaleFrame = null;
+    composeTrayFrame = null;
     restoreComposeLayout();
     document.removeEventListener('keydown', onEscape);
     window.removeEventListener('resize', scheduleLiveLayout);
@@ -1034,51 +2037,86 @@
     activeDraftObserver = null;
     composeLayoutObserver?.disconnect();
     composeLayoutObserver = null;
-    if (activeCompose && composeChromeHandler) activeCompose.removeEventListener('pointerdown', composeChromeHandler, true);
+    if (activeCompose && composeChromeHandler)
+      activeCompose.removeEventListener(
+        'pointerdown',
+        composeChromeHandler,
+        true,
+      );
     composeChromeHandler = null;
     if (activeEditor) {
       activeEditor.removeEventListener('input', scheduleRefresh);
-      activeCompose?.querySelector('input[name="subjectbox"]')?.removeEventListener('input', scheduleRefresh);
     }
+    activeSubjectInput?.removeEventListener('input', scheduleRefresh);
     viewState.floating = false;
     viewState.floatingPosition = null;
     viewState.fullPanelOverride = false;
     activeEditor = null;
     activeCompose = null;
+    activeSubjectInput = null;
+    if (restoreFocus && editorToFocus?.isConnected)
+      editorToFocus.focus({ preventScroll: true });
   }
 
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       if (mutation.type === 'attributes') {
-        const scope = mutation.target.closest?.('[role="dialog"]') || mutation.target;
+        const target =
+          mutation.target instanceof Element
+            ? mutation.target
+            : mutation.target.parentElement;
+        const scope = target?.closest('[role="dialog"]') || target;
+        if (!scope) continue;
         scanForEditors(scope);
       }
       mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === Node.ELEMENT_NODE) scanForEditors(node);
+        if (node instanceof Element) scanForEditors(node);
       });
-      const previewButtonWasRemoved = [...mutation.removedNodes].some((node) =>
-        node.nodeType === Node.ELEMENT_NODE && (node.matches?.(`.${BUTTON_CLASS}`) || node.querySelector?.(`.${BUTTON_CLASS}`))
+      const previewButtonWasRemoved = [...mutation.removedNodes].some(
+        (node) => {
+          if (!(node instanceof Element) || node.isConnected) return false;
+          const containsButton =
+            node.matches(`.${BUTTON_CLASS}`) ||
+            node.querySelector(`.${BUTTON_CLASS}`);
+          cleanupButtonsInNode(node);
+          return containsButton;
+        },
       );
       if (previewButtonWasRemoved) scanForEditors();
+    }
+    scheduleComposeTraySafeArea();
+    if (activeEditor && !activeEditor.isConnected) {
+      if (bindActiveDraftTargets()) {
+        scheduleRefresh();
+      } else {
+        closePreview(false);
+      }
     }
   });
 
   async function initialize() {
     const stored = await storageGet(Object.values(STORAGE_KEYS));
-    if (copy[stored[STORAGE_KEYS.locale]]) currentLocale = stored[STORAGE_KEYS.locale];
+    if (copy[stored[STORAGE_KEYS.locale]])
+      currentLocale = stored[STORAGE_KEYS.locale];
     const legacyPresetMap = { ios: 'iphone16', android: 'pixel9' };
-    const requestedPreset = legacyPresetMap[stored[STORAGE_KEYS.devicePreset]] || stored[STORAGE_KEYS.devicePreset];
-    if (DEVICE_PRESETS[requestedPreset]) viewState.devicePreset = requestedPreset;
+    const requestedPreset =
+      legacyPresetMap[stored[STORAGE_KEYS.devicePreset]] ||
+      stored[STORAGE_KEYS.devicePreset];
+    if (DEVICE_PRESETS[requestedPreset])
+      viewState.devicePreset = requestedPreset;
     const storedScale = Number(stored[STORAGE_KEYS.previewScale]);
-    if (storedScale >= 10 && storedScale <= 100) viewState.previewScale = Math.round(storedScale);
+    if (storedScale >= 10 && storedScale <= 100)
+      viewState.previewScale = Math.round(storedScale);
     scanForEditors();
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['contenteditable', 'role'],
       childList: true,
-      subtree: true
+      subtree: true,
     });
   }
 
-  initialize().catch(() => {});
+  initialize().catch(() => {
+    globalThis[INSTANCE_FLAG] = false;
+  });
 })();

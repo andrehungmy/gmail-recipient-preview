@@ -1,0 +1,32 @@
+{
+  "format": "Chrome Web Store screenshots",
+  "candidate": "0.8.3",
+  "dimensions": "1280x800",
+  "source": "assets/store/raw/01-live-mobile-light.png",
+  "exports": [
+    {
+      "file": "final/01-live-recipient-view-1280x800.png",
+      "message": "Write in Gmail. See the recipient view."
+    },
+    {
+      "file": "final/02-reference-devices-1280x800.png",
+      "message": "Compare common reading widths."
+    },
+    {
+      "file": "final/03-formatting-checks-1280x800.png",
+      "message": "Catch risky formatting before you send."
+    },
+    {
+      "file": "final/04-preview-zoom-1280x800.png",
+      "message": "Inspect the layout at the detail you need."
+    }
+  ],
+  "promotional_assets": [
+    {
+      "file": "final/small-promo-440x280.png",
+      "dimensions": "440x280",
+      "message": "Preview before you send."
+    }
+  ],
+  "notes": "All interface imagery comes from the current local QA build. Promotional copy and layout are deterministic overlays; no product UI was generated or altered by an image model."
+}

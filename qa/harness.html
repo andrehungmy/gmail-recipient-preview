@@ -16,7 +16,8 @@
       .send { position: absolute; left: 16px; bottom: 12px; padding: 9px 20px; border: 0; border-radius: 18px; background: #0b57d0; color: white; }
       .compose-toolbar { position: absolute; left: 104px; bottom: 12px; height: 36px; display: flex; align-items: center; gap: 3px; }
       .native-icon { width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: #444746; font-size: 18px; }
-      .discard { position: absolute; right: 16px; bottom: 12px; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: #444746; }
+      .discard-group { position: absolute; right: 16px; bottom: 12px; min-height: 36px; display: flex; align-items: center; }
+      .discard { width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: #444746; }
       .discard svg { width: 20px; height: 20px; }
     </style>
   </head>
@@ -45,8 +46,11 @@
         <button class="native-icon" command="+insertFromDrive" aria-label="Insert from Drive">△</button>
         <button class="native-icon" command="+insertImage" aria-label="Insert photo">▧</button>
         <button class="native-icon" command="+signature" aria-label="Insert signature">✎</button>
+        <button class="native-icon" aria-label="More options">⋯</button>
       </div>
-      <button class="discard" role="button" aria-label="Discard draft"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14m-9-3h4l1 3H9l1-3Zm-3 3 1 13h8l1-13M10 10v7m4-7v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="discard-group">
+        <button class="discard" role="button" aria-label="Discard draft"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14m-9-3h4l1 3H9l1-3Zm-3 3 1 13h8l1-13M10 10v7m4-7v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
     </section>
     <script src="../content.js"></script>
   </body>

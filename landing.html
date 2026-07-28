@@ -3,122 +3,447 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Gmail Recipient Preview helps you review a Gmail draft across common recipient views before you send." />
+    <meta
+      name="description"
+      content="Preview how a Gmail draft may look to recipients on common mobile viewports before you send."
+    />
     <title>Gmail Recipient Preview</title>
     <link rel="stylesheet" href="landing.css" />
   </head>
   <body>
     <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
 
-    <div class="language-switch" role="group" aria-label="Language">
-      <button type="button" data-locale="zh-TW">繁中</button>
-      <button type="button" data-locale="en">EN</button>
-    </div>
+    <header class="site-header">
+      <div class="site-nav">
+        <a
+          class="brand"
+          href="#top"
+          aria-label="Gmail Recipient Preview home"
+          data-i18n-aria-label="homeAria"
+        >
+          <img src="icons/icon-48.png" alt="" width="32" height="32" />
+          <span data-i18n="productName">Gmail Recipient Preview</span>
+        </a>
+
+        <nav
+          class="nav-links"
+          aria-label="Primary navigation"
+          data-i18n-aria-label="navAria"
+        >
+          <a href="#risks" data-i18n="navWhy">Why preview</a>
+          <a href="#how-it-works" data-i18n="navHow">How it works</a>
+          <a href="#privacy" data-i18n="navPrivacy">Privacy</a>
+        </nav>
+
+        <div class="nav-actions">
+          <div
+            class="language-switch"
+            role="group"
+            aria-label="Language"
+            data-i18n-aria-label="languageAria"
+          >
+            <button type="button" data-locale="zh-TW">繁中</button>
+            <button type="button" data-locale="en">EN</button>
+          </div>
+          <a class="nav-install" href="#install" data-i18n="navInstall"
+            >Install</a
+          >
+        </div>
+      </div>
+    </header>
 
     <main id="main">
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="product-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none"><rect x="7" y="2.75" width="10" height="18.5" rx="2.5" stroke="currentColor" stroke-width="1.75"/><path d="M9.4 8.2 12 10.15l2.6-1.95" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.25 17.75h3.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy-block">
+          <p class="eyebrow" data-i18n="heroEyebrow">
+            Chrome extension · Local preview
+          </p>
+          <h1 id="hero-title" data-i18n="heroTitle">
+            Write in Gmail.<br />See the recipient view.
+          </h1>
+          <p class="hero-copy" data-i18n="heroBody">
+            Check common mobile layouts, Dark Mode, and formatting risks while
+            the Gmail draft remains editable beside the preview.
+          </p>
+
+          <div class="hero-actions">
+            <a
+              class="button button-primary"
+              href="#install"
+              data-i18n="installCta"
+              >Install the local build</a
+            >
+            <a
+              class="button button-secondary"
+              href="https://github.com/andrehungmy/gmail-recipient-preview"
+              target="_blank"
+              rel="noopener"
+              data-i18n="viewGithub"
+              >View on GitHub</a
+            >
+          </div>
+
+          <ul
+            class="trust-list"
+            aria-label="Product facts"
+            data-i18n-aria-label="factsAria"
+          >
+            <li data-i18n="trustLocal">Draft stays in the active Gmail tab</li>
+            <li data-i18n="trustAccount">No account</li>
+            <li data-i18n="trustCost">Free and non-commercial</li>
+          </ul>
         </div>
-        <h1 id="hero-title"><strong>Gmail Recipient Preview</strong><span data-i18n="tagline">See what they may see before you send</span></h1>
-        <p class="hero-copy"><strong data-i18n="heroLead">Your important email should not be a blind send.</strong><span data-i18n="heroBody">Preview common mobile recipient views directly from Gmail, while your draft stays in the browser tab where you wrote it.</span></p>
 
-        <div class="primary-actions">
-          <a class="install-card primary" href="#install"><strong data-i18n="installCta">Install the local Chrome build</strong><small>v0.8.2 · <span data-i18n="localBuild">local build</span></small></a>
-          <a class="install-card secondary" href="#how-it-works"><strong data-i18n="guideCta">Read the product guide</strong><small data-i18n="guideMeta">3 steps · no account required</small></a>
-        </div>
-        <p class="hero-links"><span data-i18n="freeTool">Free, non-commercial browser tool</span> · <a href="#privacy" data-i18n="privacyLink">Privacy</a> · <a href="#devices" data-i18n="devicesLink">Reference devices</a> · <a href="#contact" data-i18n="contactLink">Contact</a></p>
-      </section>
-
-      <section class="update-panel" aria-labelledby="updates-title">
-        <p class="section-label" data-i18n="latestLabel">Latest build</p>
-        <h2 id="updates-title" data-i18n="updatesTitle">A clearer reference scale</h2>
-        <ul>
-          <li><span data-i18n="newBadge">New</span><p data-i18n="updateOne">Fit, 70%, and 100% detail shortcuts make preview zoom easier to understand.</p></li>
-          <li><span data-i18n="newBadge">New</span><p data-i18n="updateTwo">100% is now clearly defined as a 1× logical viewport, not physical phone size.</p></li>
-          <li><span data-i18n="fixedBadge">Fixed</span><p data-i18n="updateThree">Floating preview returns to the full panel and resizes only once after a zoom gesture.</p></li>
-        </ul>
-      </section>
-
-      <section class="content-section" id="why" aria-labelledby="why-title">
-        <h2 id="why-title" data-i18n="whyTitle">Why make Gmail Recipient Preview?</h2>
-        <p data-i18n="whyBody">A message written on a wide desktop can feel fragmented on a phone. Dark Mode and pasted formatting add more uncertainty, but checking with developer tools or sending test emails is too much friction for everyday Gmail users.</p>
-        <div class="reason-list">
-          <p><strong data-i18n="reasonOneTitle">Recipient context:</strong> <span data-i18n="reasonOneBody">compare wrapping and reading rhythm against common logical viewports.</span></p>
-          <p><strong data-i18n="reasonTwoTitle">Live editing:</strong> <span data-i18n="reasonTwoBody">keep writing while the preview updates beside the draft.</span></p>
-          <p><strong data-i18n="reasonThreeTitle">Local processing:</strong> <span data-i18n="reasonThreeBody">draft content is never uploaded, stored, or sent to an external API.</span></p>
-        </div>
-      </section>
-
-      <section class="comparison" id="how-it-works" aria-labelledby="comparison-title">
-        <h2 id="comparison-title" data-i18n="comparisonTitle">From desktop draft to recipient view</h2>
-        <div class="comparison-grid">
-          <figure>
-            <figcaption data-i18n="draftCaption">Your Gmail draft</figcaption>
-            <div class="compose-demo" aria-hidden="true">
-              <div class="compose-title">New message <span>−&nbsp; ↗&nbsp; ×</span></div>
-              <div class="field">Maya Chen</div><div class="field">Following up on our conversation</div>
-              <div class="draft-copy"><p>Hi Maya,</p><p>Thank you again for your time today. Here are the two next steps we discussed.</p><p><strong>I’ll share the draft brief by Tuesday.</strong></p></div>
-              <div class="compose-footer"><span>Send</span><i>Aa</i><i>🔗</i><b>▣&nbsp; Preview</b><i>🗑</i></div>
+        <div
+          class="hero-product"
+          aria-label="Gmail Recipient Preview product screenshot"
+          data-i18n-aria-label="productScreenshotAria"
+        >
+          <p class="product-caption" data-i18n="livePreviewLabel">
+            Live recipient preview
+          </p>
+          <figure class="product-stage">
+            <div class="screenshot-crop screenshot-crop-hero">
+              <img
+                src="assets/landing/01-full-control-panel.jpg?v=0.8.3-1"
+                alt=""
+                width="1140"
+                height="900"
+              />
             </div>
           </figure>
-          <div class="comparison-arrow" aria-hidden="true">→</div>
-          <figure>
-            <figcaption data-i18n="recipientCaption">Approximate recipient view</figcaption>
-            <div class="phone-demo" aria-hidden="true">
-              <div class="status"><span>9:41</span><b></b><span>▂▄▆ ⌁ ▭</span></div>
-              <div class="app-actions"><span>‹</span><span>✦&nbsp;&nbsp; ▣&nbsp;&nbsp; ⋯</span></div>
-              <article><h3>Following up on our conversation</h3><div class="sender"><b>Y</b><span><strong>You</strong><small>to recipient · just now</small></span></div><p>Hi Maya,</p><p>Thank you again for your time today. Here are the two next steps we discussed.</p><p><strong>I’ll share the draft brief by Tuesday.</strong></p></article>
-              <i class="home-indicator"></i>
+        </div>
+      </section>
+
+      <section
+        class="risk-section section-shell"
+        id="risks"
+        aria-labelledby="risks-title"
+      >
+        <div class="section-heading">
+          <p class="section-kicker" data-i18n="risksKicker">
+            What changes after send
+          </p>
+          <h2 id="risks-title" data-i18n="risksTitle">
+            Desktop confidence can disappear on a phone.
+          </h2>
+          <p data-i18n="risksBody">
+            A wide compose window hides the conditions your recipient actually
+            reads in. Preview the likely trouble spots before they become part
+            of the message.
+          </p>
+        </div>
+
+        <div class="risk-grid">
+          <article>
+            <span>01</span>
+            <h3 data-i18n="riskOneTitle">Unexpected wrapping</h3>
+            <p data-i18n="riskOneBody">
+              Short desktop lines may become fragmented paragraphs on a narrow
+              screen.
+            </p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3 data-i18n="riskTwoTitle">Dark Mode contrast</h3>
+            <p data-i18n="riskTwoBody">
+              Text colors and backgrounds may be remapped by the receiving app.
+            </p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3 data-i18n="riskThreeTitle">Pasted formatting</h3>
+            <p data-i18n="riskThreeBody">
+              Content copied from Docs, Word, or AI tools can carry styles you
+              did not notice.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section
+        class="workflow section-shell"
+        id="how-it-works"
+        aria-labelledby="workflow-title"
+      >
+        <div class="workflow-intro">
+          <p class="section-kicker" data-i18n="workflowKicker">
+            One writing surface, two views
+          </p>
+          <h2 id="workflow-title" data-i18n="workflowTitle">
+            Compose, preview, adjust.
+          </h2>
+          <p data-i18n="workflowBody">
+            The preview stays connected to the active draft, so you can check
+            the recipient experience without sending a test email.
+          </p>
+        </div>
+
+        <ol class="workflow-steps">
+          <li>
+            <span>1</span>
+            <div>
+              <h3 data-i18n="stepOneTitle">Open a Gmail draft</h3>
+              <p data-i18n="stepOneBody">
+                Write a new message or open an existing draft.
+              </p>
             </div>
-          </figure>
-        </div>
-        <p class="comparison-note" data-i18n="comparisonNote">Formatting, links, inline images, and reading order stay visible while you write.</p>
-      </section>
-
-      <section class="content-section" aria-labelledby="features-title">
-        <h2 id="features-title" data-i18n="featuresTitle">Features</h2>
-        <div class="feature-grid">
-          <article><h3 data-i18n="featureOneTitle">Live recipient view</h3><p data-i18n="featureOneBody">Subject, body, formatting, and inline images update without reopening Preview.</p></article>
-          <article><h3 data-i18n="featureTwoTitle">Mobile and Desktop</h3><p data-i18n="featureTwoBody">Compare a common phone viewport with a representative Gmail Web reading surface.</p></article>
-          <article><h3 data-i18n="featureThreeTitle">Light and Dark Mode</h3><p data-i18n="featureThreeBody">Review contrast and color behavior using an honest approximation of common themes.</p></article>
-          <article><h3 data-i18n="featureFourTitle">Floating preview</h3><p data-i18n="featureFourBody">Collapse the controls into a draggable phone and keep the draft fully editable.</p></article>
-          <article><h3 data-i18n="featureFiveTitle">Formatting checks</h3><p data-i18n="featureFiveBody">Flag faint, hidden, tiny, oversized, or awkwardly wrapping content locally.</p></article>
-          <article><h3 data-i18n="featureSixTitle">Bilingual interface</h3><p data-i18n="featureSixBody">Switch immediately between English and Traditional Chinese.</p></article>
-        </div>
-      </section>
-
-      <section class="content-section" id="devices" aria-labelledby="devices-title">
-        <h2 id="devices-title" data-i18n="devicesTitle">Reference devices</h2>
-        <p data-i18n="devicesBody">Presets are reference viewports for comparing layout—not physical-size replicas or pixel-identical native Gmail renders.</p>
-        <div class="device-groups">
-          <div><strong>iOS logical reference</strong><p>iPhone 16 · iPhone 17 · iPhone 17 Pro · iPhone 17 Pro Max</p></div>
-          <div><strong>Android calibrated reference</strong><p>Pixel 9 · Galaxy A07 · Galaxy A17</p></div>
-        </div>
-      </section>
-
-      <section class="privacy-panel" id="privacy" aria-labelledby="privacy-title">
-        <div class="privacy-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7.5 10V7.7A4.5 4.5 0 0 1 12 3.2a4.5 4.5 0 0 1 4.5 4.5V10M6 10h12v10H6V10Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
-        <div><h2 id="privacy-title" data-i18n="privacyTitle">Private by design</h2><p data-i18n="privacyBody">Your selected draft is processed in the active Gmail tab. There is no backend, analytics SDK, account system, or external AI API.</p></div>
-      </section>
-
-      <section class="content-section" id="install" aria-labelledby="install-title">
-        <h2 id="install-title" data-i18n="installTitle">Manual installation</h2>
-        <ol class="install-steps">
-          <li><span>1</span><div><h3 data-i18n="installOneTitle">Open Chrome Extensions</h3><p><span data-i18n="installOneBody">Visit</span> <code>chrome://extensions</code> <span data-i18n="installOneEnd">and enable Developer mode.</span></p></div></li>
-          <li><span>2</span><div><h3 data-i18n="installTwoTitle">Load the Extension</h3><p data-i18n="installTwoBody">Select Load unpacked and choose the Gmail Recipient Preview folder.</p></div></li>
-          <li><span>3</span><div><h3 data-i18n="installThreeTitle">Refresh Gmail</h3><p data-i18n="installThreeBody">Open a draft and select Preview beside the discard button.</p></div></li>
+          </li>
+          <li>
+            <span>2</span>
+            <div>
+              <h3 data-i18n="stepTwoTitle">Select Preview</h3>
+              <p data-i18n="stepTwoBody">
+                Use the Preview button beside Gmail’s discard control.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span>3</span>
+            <div>
+              <h3 data-i18n="stepThreeTitle">Keep editing</h3>
+              <p data-i18n="stepThreeBody">
+                Subject, body, formatting, and safe local inline images update
+                as you type.
+              </p>
+            </div>
+          </li>
         </ol>
+
+        <figure class="workflow-visual" aria-hidden="true">
+          <img
+            src="assets/landing/02-preview-button.jpg?v=0.8.3-1"
+            alt=""
+            width="900"
+            height="640"
+            loading="lazy"
+          />
+        </figure>
       </section>
 
-      <section class="content-section contact" id="contact" aria-labelledby="contact-title">
-        <h2 id="contact-title" data-i18n="contactTitle">Report a problem</h2>
-        <p data-i18n="contactBody">Found a Gmail rendering difference or have an idea for another device preset? Feedback is welcome.</p>
-        <p class="contact-actions"><a href="https://github.com/andrehungmy/gmail-recipient-preview/issues" target="_blank" rel="noopener" data-i18n="reportIssue">Open a GitHub issue</a><span>·</span><a href="https://github.com/andrehungmy" target="_blank" rel="noopener" data-i18n="githubProfile">GitHub profile</a></p>
+      <section
+        class="floating-feature section-shell"
+        aria-labelledby="floating-title"
+      >
+        <div class="floating-copy">
+          <p class="section-kicker" data-i18n="floatingKicker">
+            Made for long drafts
+          </p>
+          <h2 id="floating-title" data-i18n="floatingTitle">
+            Keep only the phone when you need more room.
+          </h2>
+          <p data-i18n="floatingBody">
+            Switch to a draggable floating preview, set the zoom, and continue
+            editing without a full control panel covering the draft.
+          </p>
+          <dl class="feature-facts">
+            <div>
+              <dt data-i18n="factOneTitle">Live</dt>
+              <dd data-i18n="factOneBody">Updates while you type</dd>
+            </div>
+            <div>
+              <dt data-i18n="factTwoTitle">Flexible</dt>
+              <dd data-i18n="factTwoBody">Fit, 70%, or 100% detail</dd>
+            </div>
+            <div>
+              <dt data-i18n="factThreeTitle">Honest</dt>
+              <dd data-i18n="factThreeBody">
+                Approximate, not pixel-identical
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <figure class="floating-visual" aria-hidden="true">
+          <img
+            src="assets/landing/03-floating-view.jpg?v=0.8.3-1"
+            alt=""
+            width="366"
+            height="748"
+            loading="lazy"
+          />
+        </figure>
+      </section>
+
+      <section
+        class="devices section-shell"
+        id="devices"
+        aria-labelledby="devices-title"
+      >
+        <div class="section-heading compact">
+          <p class="section-kicker" data-i18n="devicesKicker">
+            Reference viewports
+          </p>
+          <h2 id="devices-title" data-i18n="devicesTitle">
+            Compare common reading widths.
+          </h2>
+          <p data-i18n="devicesBody">
+            Device presets represent logical viewports for layout comparison.
+            They are not physical-size replicas or pixel-identical Gmail App
+            renders.
+          </p>
+        </div>
+
+        <div
+          class="device-scale"
+          aria-label="Supported reference devices"
+          data-i18n-aria-label="supportedDevicesAria"
+        >
+          <div class="scale-line" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="device-group">
+            <span>iOS</span>
+            <p>iPhone 16 · iPhone 17 · iPhone 17 Pro · iPhone 17 Pro Max</p>
+          </div>
+          <div class="device-group">
+            <span>Android</span>
+            <p>Pixel 9 · Galaxy A07 · Galaxy A17</p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="privacy-strip section-shell"
+        id="privacy"
+        aria-labelledby="privacy-title"
+      >
+        <p class="privacy-label" data-i18n="privacyLabel">
+          Privacy, stated plainly
+        </p>
+        <div>
+          <h2 id="privacy-title" data-i18n="privacyTitle">
+            Your draft stays in the Gmail tab.
+          </h2>
+          <p data-i18n="privacyBody">
+            There is no backend, analytics SDK, account system, or external AI
+            API. The extension reads only the draft you actively preview.
+          </p>
+          <ul class="privacy-points">
+            <li data-i18n="privacyPointUpload">No message uploads</li>
+            <li data-i18n="privacyPointStorage">No draft storage</li>
+            <li data-i18n="privacyPointTracking">No behavioral tracking</li>
+            <li data-i18n="privacyPointAccount">No account required</li>
+          </ul>
+          <a
+            class="privacy-policy-link"
+            href="privacy.html"
+            data-i18n="privacyPolicyLink"
+            >Read the full Privacy Policy</a
+          >
+        </div>
+      </section>
+
+      <section
+        class="install-section section-shell"
+        id="install"
+        aria-labelledby="install-title"
+      >
+        <div class="section-heading compact">
+          <p class="section-kicker" data-i18n="installKicker">
+            Install the current build
+          </p>
+          <h2 id="install-title" data-i18n="installTitle">
+            Try it locally in Chrome.
+          </h2>
+          <p data-i18n="installBody">
+            The extension is not in the Chrome Web Store yet. Install the
+            unpacked build from this repository.
+          </p>
+        </div>
+
+        <ol class="install-steps">
+          <li>
+            <span>01</span>
+            <div>
+              <h3 data-i18n="installOneTitle">Open Chrome Extensions</h3>
+              <p>
+                <span data-i18n="installOneBody">Visit</span>
+                <code>chrome://extensions</code>
+                <span data-i18n="installOneEnd"
+                  >and enable Developer mode.</span
+                >
+              </p>
+            </div>
+          </li>
+          <li>
+            <span>02</span>
+            <div>
+              <h3 data-i18n="installTwoTitle">Load the extension</h3>
+              <p data-i18n="installTwoBody">
+                Select Load unpacked and choose the Gmail Recipient Preview
+                folder.
+              </p>
+            </div>
+          </li>
+          <li>
+            <span>03</span>
+            <div>
+              <h3 data-i18n="installThreeTitle">Refresh Gmail</h3>
+              <p data-i18n="installThreeBody">
+                Open a draft and select Preview beside the discard button.
+              </p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="install-actions">
+          <a
+            class="button button-primary"
+            href="https://github.com/andrehungmy/gmail-recipient-preview"
+            target="_blank"
+            rel="noopener"
+            data-i18n="downloadGithub"
+            >Open the GitHub repository</a
+          >
+          <span>v0.8.3 · Manifest V3</span>
+        </div>
+      </section>
+
+      <section
+        class="contact section-shell"
+        id="contact"
+        aria-labelledby="contact-title"
+      >
+        <h2 id="contact-title" data-i18n="contactTitle">
+          Found a rendering difference?
+        </h2>
+        <p data-i18n="contactBody">
+          Share the Gmail version, operating system, and reference device so the
+          preview can keep improving.
+        </p>
+        <div class="contact-actions">
+          <a
+            href="https://github.com/andrehungmy/gmail-recipient-preview/issues"
+            target="_blank"
+            rel="noopener"
+            data-i18n="reportIssue"
+            >Open a GitHub issue</a
+          >
+          <a
+            href="https://github.com/andrehungmy"
+            target="_blank"
+            rel="noopener"
+            data-i18n="githubProfile"
+            >Andre Hung on GitHub</a
+          >
+        </div>
       </section>
     </main>
 
-    <footer><p>Gmail Recipient Preview · <span data-i18n="footerNote">Free, local, and non-commercial.</span></p><p><a href="#privacy" data-i18n="privacyLink">Privacy</a> · <a href="#devices" data-i18n="devicesLink">Reference devices</a> · © 2026 Andre Hung</p></footer>
+    <footer>
+      <a class="footer-brand" href="#top"
+        ><img src="icons/icon-32.png" alt="" width="24" height="24" /><span
+          data-i18n="productName"
+          >Gmail Recipient Preview</span
+        ></a
+      >
+      <p>
+        <span data-i18n="footerNote">Free, local, and non-commercial.</span> · ©
+        2026 Andre Hung
+      </p>
+    </footer>
+
     <script src="landing.js"></script>
   </body>
 </html>

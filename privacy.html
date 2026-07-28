@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Privacy Policy for Gmail Recipient Preview, a local-first Chrome extension."
+    />
+    <title>Privacy Policy · Gmail Recipient Preview</title>
+    <link rel="icon" href="icons/icon-32.png" sizes="32x32" />
+    <link rel="stylesheet" href="landing.css" />
+  </head>
+  <body class="policy-page">
+    <header class="policy-header">
+      <a
+        class="brand"
+        href="landing.html"
+        aria-label="Gmail Recipient Preview home"
+      >
+        <img src="icons/icon-48.png" alt="" width="40" height="40" />
+        <span>Gmail Recipient Preview</span>
+      </a>
+      <a class="policy-back" href="landing.html">Back to product guide</a>
+    </header>
+
+    <main class="policy-shell">
+      <section class="policy-hero">
+        <p class="section-kicker">Privacy Policy</p>
+        <h1>Your draft is processed locally.</h1>
+        <p>
+          Gmail Recipient Preview does not upload or store your email content.
+          The extension reads only the draft you explicitly choose to preview
+          and creates the preview inside the active Gmail tab.
+        </p>
+        <p class="policy-meta">Effective July 28, 2026 · Version 0.8.3</p>
+      </section>
+
+      <section class="policy-summary" aria-label="Privacy summary">
+        <div>
+          <strong>No uploads</strong
+          ><span>Email content stays on your device.</span>
+        </div>
+        <div>
+          <strong>No draft storage</strong
+          ><span>The extension does not save subjects or message bodies.</span>
+        </div>
+        <div>
+          <strong>No tracking</strong
+          ><span
+            >There is no analytics, telemetry, advertising, or external AI
+            API.</span
+          >
+        </div>
+      </section>
+
+      <article class="policy-content" aria-labelledby="english-policy">
+        <h2 id="english-policy">English</h2>
+
+        <h3>What the extension handles</h3>
+        <p>
+          When you select Preview in Gmail Compose, the extension reads the
+          subject, message body, supported formatting, and supported inline
+          images from that open draft. It uses this information only to render
+          the recipient preview and identify the formatting risks shown in the
+          interface.
+        </p>
+
+        <h3>What the extension does not collect or share</h3>
+        <p>
+          The extension does not collect, transmit, sell, store, or share email
+          content, account data, personal information, or usage analytics. It
+          has no backend service, analytics SDK, advertising system, account
+          system, remote logging, or external API integration. The developer
+          cannot read your drafts through the extension.
+        </p>
+
+        <h3>Images</h3>
+        <p>
+          Network-backed images in draft HTML are replaced with a local
+          placeholder inside Preview, so opening Preview does not contact the
+          image host. Local <code>blob:</code> images and allowlisted raster
+          <code>data:</code> images may remain visible. Gmail may already load
+          or proxy images in Compose independently of this extension.
+        </p>
+
+        <h3>Local preferences</h3>
+        <p>
+          Chrome local extension storage contains only the selected interface
+          language, reference device, and preview size. These preferences never
+          include recipients, subjects, message bodies, attachments, images, or
+          warning results. Uninstalling the extension removes its local
+          preferences; they can also be cleared from Chrome's extension data.
+        </p>
+
+        <h3>Permissions</h3>
+        <p>
+          Access to <code>https://mail.google.com/*</code> is required to add
+          the Preview control to Gmail Compose and read the draft you actively
+          preview. The <code>storage</code> permission saves the three interface
+          preferences listed above. The extension cannot send email, access
+          contacts, or read mailbox history through a Gmail API.
+        </p>
+
+        <h3>Chrome Web Store Limited Use</h3>
+        <p>
+          Gmail Recipient Preview's use of information received from Google
+          services adheres to the Chrome Web Store User Data Policy, including
+          the Limited Use requirements. User data is used only for the
+          extension's disclosed preview feature. It is not sold, transferred for
+          advertising, used to determine creditworthiness, or made available for
+          human review by the developer.
+        </p>
+
+        <h3>Support and security</h3>
+        <p>
+          Report ordinary product issues through
+          <a
+            href="https://github.com/andrehungmy/gmail-recipient-preview/issues"
+            >GitHub Issues</a
+          >. Please use the repository's private vulnerability-reporting flow
+          for security or privacy concerns. Never include real email content,
+          addresses, credentials, or mailbox screenshots in a public report.
+        </p>
+      </article>
+
+      <article
+        class="policy-content policy-content-zh"
+        lang="zh-Hant"
+        aria-labelledby="traditional-chinese-policy"
+      >
+        <h2 id="traditional-chinese-policy">繁體中文</h2>
+
+        <h3>擴充功能會處理哪些內容</h3>
+        <p>
+          當你在 Gmail
+          撰寫視窗中點選「預覽」，擴充功能會讀取目前草稿的主旨、內文、支援的文字格式與內嵌圖片。這些內容只會用來產生收件畫面預覽，以及顯示介面中的格式提醒。
+        </p>
+
+        <h3>不會蒐集或分享的資料</h3>
+        <p>
+          擴充功能不會蒐集、上傳、販售、儲存或分享信件內容、帳戶資料、個人資訊或使用數據，也沒有後端伺服器、分析工具、廣告系統、帳號系統、遠端紀錄或外部
+          API。開發者無法透過這項擴充功能讀取你的草稿。
+        </p>
+
+        <h3>圖片處理</h3>
+        <p>
+          草稿中的網路圖片會在預覽中改以本機提示取代，因此開啟預覽不會向圖片來源發出請求。本機
+          <code>blob:</code> 圖片與允許的點陣
+          <code>data:</code> 圖片仍可能顯示。Gmail
+          可能會在撰寫視窗中自行載入或代理圖片，這不受擴充功能控制。
+        </p>
+
+        <h3>儲存在本機的偏好設定</h3>
+        <p>
+          Chrome
+          的本機擴充功能儲存空間只會保留介面語言、參考裝置與預覽比例。這些設定不會包含收件者、主旨、內文、附件、圖片或提醒結果。移除擴充功能時，Chrome
+          也會清除這些偏好設定；你也可以手動清除擴充功能資料。
+        </p>
+
+        <h3>權限用途</h3>
+        <p>
+          擴充功能需要存取 <code>https://mail.google.com/*</code>，才能在 Gmail
+          撰寫視窗中加入「預覽」按鈕，並讀取你主動預覽的草稿。<code
+            >storage</code
+          >
+          權限只用來保存前述三項介面設定。擴充功能無法透過 Gmail API
+          寄信、讀取聯絡人或瀏覽信箱紀錄。
+        </p>
+
+        <h3>Chrome Web Store 資料使用限制</h3>
+        <p>
+          Gmail Recipient Preview 對 Google 服務資訊的使用方式，遵守 Chrome Web
+          Store User Data Policy 與 Limited Use
+          requirements。使用者資料只會用於已公開說明的預覽功能，不會販售、轉交廣告服務、用來判斷信用，也不會開放給開發者人工查看。
+        </p>
+
+        <h3>問題回報與資安通報</h3>
+        <p>
+          一般功能問題請透過
+          <a
+            href="https://github.com/andrehungmy/gmail-recipient-preview/issues"
+            >GitHub Issues</a
+          >
+          回報。資安或隱私問題請使用 Repository
+          的非公開漏洞通報功能。請勿在公開回報中附上真實信件內容、Email
+          地址、憑證或信箱截圖。
+        </p>
+      </article>
+
+      <section class="policy-disclaimer">
+        <p>
+          Gmail is a trademark of Google LLC. This independent project is not
+          affiliated with, endorsed by, or guaranteed by Google.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

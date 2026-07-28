@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Gmail Recipient Preview",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Preview how a Gmail draft may appear to recipients across common devices, themes, and Gmail surfaces.",
   "permissions": ["storage"],
   "host_permissions": [
@@ -10,6 +10,9 @@
   "action": {
     "default_title": "Gmail Recipient Preview",
     "default_popup": "popup.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "content_scripts": [
     {
