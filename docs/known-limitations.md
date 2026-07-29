@@ -27,12 +27,12 @@
 ## Accessibility and localization
 
 - Core controls have keyboard focus styles and accessible names, but a complete screen-reader matrix has not been run.
-- English and Traditional Chinese are supported in product surfaces. Chrome Web Store submission copy is maintained separately, while Chrome `_locales` integration is not implemented.
+- English and Traditional Chinese are supported in product surfaces and Chrome-managed extension metadata. Detailed Chrome Web Store descriptions are maintained separately for each locale.
 - RTL draft content is preserved when supported by sanitized `dir` attributes, but the full preview shell is not localized for RTL languages.
 
 ## Platform and release
 
 - The MVP targets Chrome Manifest V3 and has not been qualified for Edge, Brave, or other Chromium distributions.
-- There is no public Chrome Web Store release, signed package, rollback channel, or installed-user migration evidence.
+- Version 0.8.3 is publicly available in the Chrome Web Store. There is no separate rollback channel or installed-user migration evidence yet.
 - The repository has no explicit software license yet.
 - Automated tests use a local Gmail-like harness; real Gmail manual QA remains a release gate.

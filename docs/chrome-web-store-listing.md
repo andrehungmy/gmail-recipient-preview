@@ -1,8 +1,10 @@
 # Chrome Web Store Submission Copy
 
-**Candidate:** 0.8.3
+**Candidate:** 0.8.4
 
 **Primary language:** English
+
+**Localized language:** Traditional Chinese (Taiwan)
 
 **Category:** Productivity
 
@@ -45,6 +47,41 @@ Privacy is part of the product design. Draft content is processed locally in the
 This is an approximate pre-send inspection tool, not a native Gmail App emulator. Rendering can still vary by email client, version, device, display settings, accessibility preferences, and server-side transformations.
 
 Gmail is a trademark of Google LLC. Gmail Recipient Preview is an independent project and is not affiliated with, endorsed by, or guaranteed by Google.
+
+## Traditional Chinese store listing
+
+### Name
+
+Gmail Recipient Preview
+
+### Summary
+
+在寄出前預覽 Gmail 草稿在常見裝置、淺色與深色模式下的收件畫面。
+
+### Detailed description
+
+Gmail Recipient Preview 會在 Gmail 撰寫視窗中加入「預覽」按鈕，讓你在寄出前，先從收件者的角度檢查草稿的閱讀畫面。
+
+你可以繼續編輯 Gmail 草稿，預覽會在旁邊即時更新。切換常見的手機顯示寬度、淺色或近似深色模式；需要更多編輯空間時，也可以改用可拖曳的浮動預覽。
+
+工具會提醒幾種常見的格式風險，例如低對比或隱藏文字、過小字級、過多空白、過長網址、無法自然換行的字串，以及超出手機寬度的圖片或表格。為保護隱私，預覽畫面不會載入網路圖片，而會以本機提示取代。
+
+主要功能：
+
+- 編輯目前的 Gmail 草稿時即時同步預覽
+- 提供行動裝置與電腦版閱讀畫面
+- 可切換 iPhone、Pixel 與 Samsung Galaxy 參考寬度
+- 支援淺色與近似深色模式
+- 可調整預覽比例，或改用可拖曳的浮動視窗
+- 在本機檢查格式問題，並標示可能需要注意的位置
+- 介面支援英文與繁體中文
+- 不需帳號，也沒有後端、分析追蹤、廣告或外部 AI API
+
+草稿內容只會在目前的 Gmail 分頁中處理，不會由這項擴充功能上傳或儲存。工具只會在 Chrome 的本機擴充功能儲存空間中保存介面語言、參考裝置與預覽比例。
+
+這是一項寄出前的近似預覽工具，並非 Gmail App 模擬器。實際畫面仍可能因郵件 App、版本、裝置、顯示設定、輔助使用偏好或伺服器端處理而有所不同。
+
+Gmail 是 Google LLC 的商標。Gmail Recipient Preview 為獨立專案，與 Google 沒有合作、背書或保證關係。
 
 ## URLs
 

@@ -1,5 +1,7 @@
 export const packageFiles = [
   "manifest.json",
+  "_locales/en/messages.json",
+  "_locales/zh_TW/messages.json",
   "content.js",
   "content.css",
   "popup.html",

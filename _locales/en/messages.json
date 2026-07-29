@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "Gmail Recipient Preview",
+    "description": "Extension name shown by Chrome and the Chrome Web Store."
+  },
+  "appDescription": {
+    "message": "Preview how a Gmail draft may appear to recipients across common devices, themes, and Gmail surfaces.",
+    "description": "Short extension summary shown by Chrome and the Chrome Web Store."
+  }
+}
