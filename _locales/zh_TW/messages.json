@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "Gmail Recipient Preview",
+    "description": "Chrome 與 Chrome 線上應用程式商店顯示的擴充功能名稱。"
+  },
+  "appDescription": {
+    "message": "在寄出前預覽 Gmail 草稿在常見裝置、淺色與深色模式下的收件畫面。",
+    "description": "Chrome 與 Chrome 線上應用程式商店顯示的擴充功能摘要。"
+  }
+}

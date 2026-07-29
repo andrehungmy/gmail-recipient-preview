@@ -2,7 +2,7 @@
 
 Gmail Recipient Preview is a local-first Chrome extension that helps non-technical Gmail users inspect how a draft may read on common mobile widths and in an approximate Dark Mode before sending.
 
-> **Status:** Version 0.8.3 is a Chrome Web Store release candidate. It is not published yet and does not promise pixel-identical rendering in Gmail or any other email client.
+> **Status:** Version 0.8.3 is publicly available in the Chrome Web Store. Version 0.8.4 adds localized Store metadata for English and Traditional Chinese. The preview does not promise pixel-identical rendering in Gmail or any other email client.
 
 [Product guide](https://andrehungmy.github.io/gmail-recipient-preview/) · [Privacy Policy](https://andrehungmy.github.io/gmail-recipient-preview/privacy.html) · [Support](https://github.com/andrehungmy/gmail-recipient-preview/issues)
 
@@ -131,7 +131,7 @@ Real Gmail remains a required manual release gate because Gmail uses private, ch
 
 Packaging does not publish a release or submit to the Chrome Web Store.
 
-Chrome Web Store metadata, privacy answers, reviewer steps, and asset paths are maintained in [Chrome Web Store submission copy](docs/chrome-web-store-listing.md). Version-specific changes and remaining manual gates are recorded in [0.8.3 release notes](docs/releases/v0.8.3.md).
+Chrome Web Store metadata, privacy answers, reviewer steps, and asset paths are maintained in [Chrome Web Store submission copy](docs/chrome-web-store-listing.md). Version-specific changes and remaining manual gates are recorded in [0.8.4 release notes](docs/releases/v0.8.4.md).
 
 ## Current roadmap
 

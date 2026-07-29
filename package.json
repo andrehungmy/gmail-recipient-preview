@@ -1,6 +1,6 @@
 {
   "name": "gmail-recipient-preview",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "private": true,
   "description": "Local-first recipient preview for Gmail drafts.",
   "type": "module",
@@ -8,8 +8,8 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "format": "prettier --write --ignore-unknown package.json eslint.config.mjs jsconfig.json tools tests .github docs assets/store/manifest.json landing.html privacy.html README.md PRIVACY.md SECURITY_REVIEW.md TEST_CASES.md CONTRIBUTING.md SECURITY.md",
-    "format:check": "prettier --check --ignore-unknown package.json eslint.config.mjs jsconfig.json tools tests .github docs assets/store/manifest.json landing.html privacy.html README.md PRIVACY.md SECURITY_REVIEW.md TEST_CASES.md CONTRIBUTING.md SECURITY.md",
+    "format": "prettier --write --ignore-unknown package.json package-lock.json eslint.config.mjs jsconfig.json tools tests .github docs _locales assets/store/manifest.json landing.html privacy.html README.md PRIVACY.md SECURITY_REVIEW.md TEST_CASES.md CONTRIBUTING.md SECURITY.md",
+    "format:check": "prettier --check --ignore-unknown package.json package-lock.json eslint.config.mjs jsconfig.json tools tests .github docs _locales assets/store/manifest.json landing.html privacy.html README.md PRIVACY.md SECURITY_REVIEW.md TEST_CASES.md CONTRIBUTING.md SECURITY.md",
     "lint": "eslint .",
     "typecheck": "tsc -p jsconfig.json",
     "test": "node tests/browser-tests.mjs",

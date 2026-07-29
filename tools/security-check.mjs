@@ -11,6 +11,11 @@ function check(condition, message) {
 
 const manifest = JSON.parse(await read("manifest.json"));
 const packageJson = JSON.parse(await read("package.json"));
+const packageLock = JSON.parse(await read("package-lock.json"));
+const englishMessages = JSON.parse(await read("_locales/en/messages.json"));
+const traditionalChineseMessages = JSON.parse(
+  await read("_locales/zh_TW/messages.json"),
+);
 const content = await read("content.js");
 const popup = await read("popup.js");
 const landing = await read("landing.js");
@@ -21,6 +26,30 @@ check(manifest.manifest_version === 3, "Manifest must remain version 3.");
 check(
   packageJson.version === manifest.version,
   "Package and manifest versions must match.",
+);
+check(
+  packageLock.version === manifest.version &&
+    packageLock.packages?.[""]?.version === manifest.version,
+  "Package lock and manifest versions must match.",
+);
+check(
+  manifest.default_locale === "en",
+  "English must remain the fallback locale.",
+);
+check(
+  manifest.name === "__MSG_appName__" &&
+    manifest.description === "__MSG_appDescription__",
+  "Manifest name and description must use localized message keys.",
+);
+check(
+  englishMessages.appName?.message === "Gmail Recipient Preview" &&
+    traditionalChineseMessages.appName?.message === "Gmail Recipient Preview",
+  "The product name must remain consistent across locales.",
+);
+check(
+  Boolean(englishMessages.appDescription?.message) &&
+    Boolean(traditionalChineseMessages.appDescription?.message),
+  "Both supported locales must provide an extension summary.",
 );
 check(
   JSON.stringify(manifest.permissions) === JSON.stringify(["storage"]),
