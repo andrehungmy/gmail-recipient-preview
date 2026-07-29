@@ -56,7 +56,7 @@
       <section class="hero" id="top" aria-labelledby="hero-title">
         <div class="hero-copy-block">
           <p class="eyebrow" data-i18n="heroEyebrow">
-            Chrome extension · Local preview
+            Chrome extension · Available on the Chrome Web Store
           </p>
           <h1 id="hero-title" data-i18n="heroTitle">
             Write in Gmail.<br />See the recipient view.
@@ -69,9 +69,11 @@
           <div class="hero-actions">
             <a
               class="button button-primary"
-              href="#install"
+              href="https://chromewebstore.google.com/detail/gmail-recipient-preview/lklaljdbicnibngpfmfdbkflpeaeapca"
+              target="_blank"
+              rel="noopener"
               data-i18n="installCta"
-              >Install the local build</a
+              >Install from the Chrome Web Store</a
             >
             <a
               class="button button-secondary"
@@ -243,10 +245,12 @@
             </div>
             <div>
               <dt data-i18n="factTwoTitle">Flexible</dt>
-              <dd data-i18n="factTwoBody">Fit, 70%, or 100% detail</dd>
+              <dd data-i18n="factTwoBody">
+                Show the full device, 70%, or 100% detail
+              </dd>
             </div>
             <div>
-              <dt data-i18n="factThreeTitle">Honest</dt>
+              <dt data-i18n="factThreeTitle">Approximate preview</dt>
               <dd data-i18n="factThreeBody">
                 Approximate, not pixel-identical
               </dd>
@@ -278,9 +282,8 @@
             Compare common reading widths.
           </h2>
           <p data-i18n="devicesBody">
-            Device presets represent logical viewports for layout comparison.
-            They are not physical-size replicas or pixel-identical Gmail App
-            renders.
+            Device presets compare layouts at common screen widths. They are not
+            physical-size replicas or pixel-identical Gmail App renders.
           </p>
         </div>
 
@@ -340,15 +343,11 @@
         aria-labelledby="install-title"
       >
         <div class="section-heading compact">
-          <p class="section-kicker" data-i18n="installKicker">
-            Install the current build
-          </p>
-          <h2 id="install-title" data-i18n="installTitle">
-            Try it locally in Chrome.
-          </h2>
+          <p class="section-kicker" data-i18n="installKicker">Available now</p>
+          <h2 id="install-title" data-i18n="installTitle">Add it to Chrome.</h2>
           <p data-i18n="installBody">
-            The extension is not in the Chrome Web Store yet. Install the
-            unpacked build from this repository.
+            Gmail Recipient Preview is available on the Chrome Web Store. Add it
+            to Chrome, then open a Gmail draft to start previewing.
           </p>
         </div>
 
@@ -356,32 +355,28 @@
           <li>
             <span>01</span>
             <div>
-              <h3 data-i18n="installOneTitle">Open Chrome Extensions</h3>
-              <p>
-                <span data-i18n="installOneBody">Visit</span>
-                <code>chrome://extensions</code>
-                <span data-i18n="installOneEnd"
-                  >and enable Developer mode.</span
-                >
+              <h3 data-i18n="installOneTitle">Open the Chrome Web Store</h3>
+              <p data-i18n="installOneBody">
+                Visit the Gmail Recipient Preview listing.
               </p>
             </div>
           </li>
           <li>
             <span>02</span>
             <div>
-              <h3 data-i18n="installTwoTitle">Load the extension</h3>
+              <h3 data-i18n="installTwoTitle">Add it to Chrome</h3>
               <p data-i18n="installTwoBody">
-                Select Load unpacked and choose the Gmail Recipient Preview
-                folder.
+                Select Add to Chrome and confirm the installation.
               </p>
             </div>
           </li>
           <li>
             <span>03</span>
             <div>
-              <h3 data-i18n="installThreeTitle">Refresh Gmail</h3>
+              <h3 data-i18n="installThreeTitle">Open a Gmail draft</h3>
               <p data-i18n="installThreeBody">
-                Open a draft and select Preview beside the discard button.
+                Start a new message or open a saved draft, then select Preview
+                beside the discard button.
               </p>
             </div>
           </li>
@@ -390,13 +385,21 @@
         <div class="install-actions">
           <a
             class="button button-primary"
+            href="https://chromewebstore.google.com/detail/gmail-recipient-preview/lklaljdbicnibngpfmfdbkflpeaeapca"
+            target="_blank"
+            rel="noopener"
+            data-i18n="storeCta"
+            >Open the Chrome Web Store</a
+          >
+          <a
+            class="button button-secondary"
             href="https://github.com/andrehungmy/gmail-recipient-preview"
             target="_blank"
             rel="noopener"
-            data-i18n="downloadGithub"
-            >Open the GitHub repository</a
+            data-i18n="sourceGithub"
+            >View source on GitHub</a
           >
-          <span>v0.8.3 · Manifest V3</span>
+          <span>Chrome Web Store · Manifest V3</span>
         </div>
       </section>
 

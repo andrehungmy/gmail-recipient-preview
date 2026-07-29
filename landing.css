@@ -663,7 +663,17 @@ code {
 .install-actions .button-primary:hover {
   background: var(--blue-deep);
 }
+.install-actions .button-secondary {
+  border-color: var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+}
+.install-actions .button-secondary:hover {
+  border-color: var(--ink);
+  background: var(--surface-blue);
+}
 .install-actions > span {
+  margin-left: auto;
   color: var(--muted);
   font: 500 11px/16px var(--body);
 }
@@ -1009,6 +1019,9 @@ button:focus-visible {
   .install-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+  .install-actions > span {
+    margin-left: 0;
   }
   .contact {
     width: calc(100% - 16px);
