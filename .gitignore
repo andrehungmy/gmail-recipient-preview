@@ -3,6 +3,7 @@
 # Generated QA artifacts
 output/
 dist/
+.audit/
 node_modules/
 
 # Local release archives (publish selected builds through GitHub Releases)

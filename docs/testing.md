@@ -20,9 +20,12 @@ npm test
 npm run build
 npm run package
 npm run package:inspect
+npm run release:preflight:local
 ```
 
 `npm run build` validates the source-shipped extension; it does not bundle or transpile code.
+
+Use `npm run release:preflight` after committing the intended candidate. It checks version identity, release notes, checklist candidate, artifact checksum, and Git cleanliness. Use `npm run release:preflight:final` only after every manual checkbox is complete. None of these commands uploads or submits to Chrome Web Store.
 
 ## Browser test coverage
 

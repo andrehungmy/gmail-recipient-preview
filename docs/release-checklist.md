@@ -2,19 +2,21 @@
 
 Use this checklist for a specific candidate version. Record evidence and do not mark an item complete based on an earlier archive or working tree.
 
-**Candidate:** 0.8.3
+**Candidate:** 0.8.4
 
-**Automated verification date:** July 28, 2026
+**Automated verification date:** July 29, 2026
 
-**Artifact:** `dist/gmail-recipient-preview-v0.8.3.zip`
+**Artifact:** `dist/gmail-recipient-preview-v0.8.4.zip`
 
-**SHA-256:** `967aabf2c614cc4f371efa46e34228ed37a0c6e0c1a1cb4193e53aacccd5c26e`
+**SHA-256:** `284cea1ae271956a689bde97ad8c4031d3a55e3e02b533bc43743f52d082f101`
 **Automated browser environment:** Google Chrome 150.0.7871.187 on macOS 26.5.2
+
+Version 0.8.4 changes localization metadata only. The 0.8.3 live Gmail smoke evidence remains the latest behavior-changing manual run; automated browser, security, packaging, localization, and asset validation are rerun for 0.8.4.
 
 ## Candidate identity
 
 - [x] `manifest.json` and `package.json` versions match.
-- [x] The intended release branch is identified: `codex/v0.8.3-release-candidate`.
+- [x] The intended release branch is identified: `codex/v0.8.4-localization`.
 - [x] Release notes describe only verified changes.
 - [x] No unrelated or unreviewed local changes are included.
 
@@ -72,6 +74,7 @@ Use this checklist for a specific candidate version. Record evidence and do not 
 - [x] `npm run test:security` passes.
 - [x] `npm test` passes with the locally installed Chrome.
 - [x] `npm run build` passes.
+- [x] `npm run release:preflight:local` passes for the working candidate.
 
 ## Package inspection
 

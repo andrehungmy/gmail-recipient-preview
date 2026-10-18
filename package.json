@@ -22,7 +22,10 @@
     "capture:landing": "node tools/capture-landing-assets.mjs",
     "render:store": "node tools/render-store-assets.mjs",
     "release:assets": "npm run capture:landing && npm run render:store",
-    "release:check": "npm run build && npm test && npm run validate:store && npm run package && npm run package:inspect"
+    "release:check": "npm run build && npm test && npm run validate:store && npm run package && npm run package:inspect",
+    "release:preflight": "npm run release:check && node tools/release-preflight.mjs",
+    "release:preflight:local": "npm run release:check && node tools/release-preflight.mjs --allow-dirty",
+    "release:preflight:final": "npm run release:check && node tools/release-preflight.mjs --require-manual-complete"
   },
   "devDependencies": {
     "eslint": "10.7.0",

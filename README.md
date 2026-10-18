@@ -78,27 +78,31 @@ npm run validate
 npm test
 npm run package
 npm run package:inspect
+npm run release:preflight:local
 ```
 
 The extension ships source files directly; there is no production bundler or runtime dependency. `npm run build` is a release validation alias, not a transpilation step.
 
 ## Development commands
 
-| Command                   | Purpose                                                                  |
-| ------------------------- | ------------------------------------------------------------------------ |
-| `npm run format`          | Format maintained documentation, configuration, tools, and tests.        |
-| `npm run format:check`    | Check those files without changing them.                                 |
-| `npm run lint`            | Run ESLint across browser and Node JavaScript.                           |
-| `npm run typecheck`       | Type-check the browser runtime JavaScript with TypeScript `checkJs`.     |
-| `npm run test:security`   | Enforce permissions, CSP, network-client, storage, and sanitizer policy. |
-| `npm run validate:store`  | Verify Store screenshots, promo tile, and icon dimensions.               |
-| `npm test`                | Run deterministic browser tests against the local Gmail-like harness.    |
-| `npm run validate`        | Run formatting, lint, typecheck, and static security checks.             |
-| `npm run build`           | Run the release validation alias.                                        |
-| `npm run package`         | Create an allowlisted extension ZIP under `dist/`.                       |
-| `npm run package:inspect` | Verify the ZIP contains exactly the runtime allowlist.                   |
-| `npm run release:assets`  | Refresh Landing and Chrome Web Store imagery from the local QA harness.  |
-| `npm run release:check`   | Run release validation, browser tests, asset checks, and packaging.      |
+| Command                           | Purpose                                                                  |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| `npm run format`                  | Format maintained documentation, configuration, tools, and tests.        |
+| `npm run format:check`            | Check those files without changing them.                                 |
+| `npm run lint`                    | Run ESLint across browser and Node JavaScript.                           |
+| `npm run typecheck`               | Type-check the browser runtime JavaScript with TypeScript `checkJs`.     |
+| `npm run test:security`           | Enforce permissions, CSP, network-client, storage, and sanitizer policy. |
+| `npm run validate:store`          | Verify Store screenshots, promo tile, and icon dimensions.               |
+| `npm test`                        | Run deterministic browser tests against the local Gmail-like harness.    |
+| `npm run validate`                | Run formatting, lint, typecheck, and static security checks.             |
+| `npm run build`                   | Run the release validation alias.                                        |
+| `npm run package`                 | Create an allowlisted extension ZIP under `dist/`.                       |
+| `npm run package:inspect`         | Verify the ZIP contains exactly the runtime allowlist.                   |
+| `npm run release:assets`          | Refresh Landing and Chrome Web Store imagery from the local QA harness.  |
+| `npm run release:check`           | Run release validation, browser tests, asset checks, and packaging.      |
+| `npm run release:preflight:local` | Run the automated preflight while allowing intended local changes.       |
+| `npm run release:preflight`       | Run the automated preflight and require a clean Git working tree.        |
+| `npm run release:preflight:final` | Also fail while any manual release-checklist item is incomplete.         |
 
 ## Project structure
 

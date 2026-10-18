@@ -41,6 +41,7 @@ npm test
 npm run build
 npm run package
 npm run package:inspect
+npm run release:preflight:local
 git diff --check
 ```
 
