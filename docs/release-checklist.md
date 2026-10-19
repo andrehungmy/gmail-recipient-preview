@@ -83,7 +83,7 @@ Version 0.9.0 includes the unsubmitted 0.8.4 localization metadata and a behavio
 - [x] The ZIP contains all `landing.html` image references.
 - [x] The ZIP excludes tests, QA fixtures, raw/final store working assets, internal docs, logs, environment files, source maps, and development dependencies.
 - [ ] Load the unpacked ZIP contents in a clean Chrome profile and repeat smoke tests.
-- [ ] `LIVE-015` remembered Floating preview passes in real Gmail.
+- [x] `LIVE-015` remembered Floating preview passes in real Gmail (maintainer, October 19, 2026).
 - [x] Record archive name, size, and checksum.
 
 ## Documentation and open source
@@ -110,6 +110,13 @@ Version 0.9.0 includes the unsubmitted 0.8.4 localization metadata and a behavio
 - [ ] `TEST_CASES.md` P0, LIVE, SAF, IMG, WEB, localization, and lifecycle cases pass.
 - [ ] Native comparison evidence follows `DEVICE_RESEARCH_AND_VALIDATION.md`.
 - [ ] Any skipped test states the reason, resulting uncertainty, and later verification method.
+
+### Live Gmail smoke test — October 19, 2026 (v0.9.0)
+
+- Test owner: maintainer, in real Gmail with the v0.9.0 unpacked release build.
+- Passed (maintainer report): `LIVE-015` remembered Floating preview and Floating zoom.
+- Passed (maintainer report): basic Preview flow — open Preview from Compose, draft synchronization, and close.
+- Not recorded for this run: exact Chrome/OS versions, Gmail locale, clean-profile loading, and the full `TEST_CASES.md` matrix; the related checkboxes above remain unchecked.
 
 ### Live Gmail smoke test — July 28, 2026
 
