@@ -548,6 +548,133 @@ try {
     },
   );
 
+  await runTest(
+    "remembers Floating preview and Floating zoom between previews",
+    async () => {
+      const prefsPage = await context.newPage();
+      await prefsPage.addInitScript(() => {
+        const key = "grpTestExtensionStorage";
+        const read = () =>
+          JSON.parse(globalThis.sessionStorage.getItem(key) || "{}");
+        globalThis.chrome = {
+          storage: {
+            local: {
+              get: async (keys) =>
+                Object.fromEntries(
+                  Object.entries(read()).filter(([name]) =>
+                    keys.includes(name),
+                  ),
+                ),
+              set: async (values) =>
+                globalThis.sessionStorage.setItem(
+                  key,
+                  JSON.stringify({ ...read(), ...values }),
+                ),
+            },
+          },
+        };
+      });
+      const readStore = () =>
+        prefsPage.evaluate(() =>
+          JSON.parse(
+            globalThis.sessionStorage.getItem("grpTestExtensionStorage") ||
+              "{}",
+          ),
+        );
+      const root = prefsPage.locator("#gmail-reader-preview-root");
+      const openPreview = async () => {
+        await prefsPage.locator(".gmail-reader-preview-button").first().click();
+        await root.waitFor();
+      };
+      const closePreview = async () => {
+        await root.locator("[data-close]:visible").first().click();
+        await root.waitFor({ state: "detached" });
+      };
+      const isFloating = () =>
+        root.evaluate((element) =>
+          element.classList.contains("grp-is-floating"),
+        );
+
+      try {
+        await prefsPage.goto(`${baseUrl}/qa/harness.html`);
+        await prefsPage.locator(".gmail-reader-preview-button").waitFor();
+
+        await openPreview();
+        assert.equal(await isFloating(), false);
+        await root.locator("[data-floating-enter]").click();
+        assert.equal(await isFloating(), true);
+        await root.locator("[data-floating-scale]").evaluate((input) => {
+          input.value = "70";
+          input.dispatchEvent(new globalThis.Event("input", { bubbles: true }));
+          input.dispatchEvent(
+            new globalThis.Event("change", { bubbles: true }),
+          );
+        });
+        await closePreview();
+
+        await openPreview();
+        assert.equal(await isFloating(), true);
+        assert.equal(
+          await root.locator("[data-floating-scale]").inputValue(),
+          "70",
+        );
+        assert.deepEqual(
+          {
+            floating: (await readStore()).gmailReaderPreviewFloating,
+            scale: (await readStore()).gmailReaderPreviewFloatingScale,
+          },
+          { floating: true, scale: 70 },
+        );
+        await closePreview();
+
+        await prefsPage.reload();
+        await prefsPage.locator(".gmail-reader-preview-button").waitFor();
+        await openPreview();
+        assert.equal(await isFloating(), true);
+        assert.equal(
+          await root.locator("[data-floating-scale]").inputValue(),
+          "70",
+        );
+        await root.locator("[data-floating-exit]").click();
+        assert.equal(await isFloating(), false);
+        await closePreview();
+        await openPreview();
+        assert.equal(await isFloating(), false);
+        assert.equal((await readStore()).gmailReaderPreviewFloating, false);
+        await closePreview();
+
+        await prefsPage.evaluate(() =>
+          globalThis.sessionStorage.setItem(
+            "grpTestExtensionStorage",
+            JSON.stringify({
+              gmailReaderPreviewFloating: "yes",
+              gmailReaderPreviewFloatingScale: 500,
+            }),
+          ),
+        );
+        await prefsPage.reload();
+        await prefsPage.locator(".gmail-reader-preview-button").waitFor();
+        await openPreview();
+        assert.equal(await isFloating(), false);
+        await root.locator("[data-floating-enter]").click();
+        assert.equal(
+          await root.locator("[data-floating-scale]").inputValue(),
+          "40",
+        );
+        assert.deepEqual(
+          await prefsPage.evaluate(() =>
+            Object.keys(localStorage).filter((key) =>
+              key.startsWith("gmailReaderPreview"),
+            ),
+          ),
+          [],
+        );
+      } finally {
+        await prefsPage.close();
+      }
+    },
+  );
+
   await runTest("prevents duplicate initialization", async () => {
     await page.evaluate(() => {
       const script = document.createElement("script");
@@ -657,7 +784,7 @@ try {
 }
 
 console.log(
-  "Browser tests passed: sync, privacy, sanitization, controls, localization, public policy, multiple drafts, cleanup, and duplicate initialization.",
+  "Browser tests passed: sync, privacy, sanitization, controls, remembered layout, localization, public policy, multiple drafts, cleanup, and duplicate initialization.",
 );
 
 async function assertText(locator, expectedSubstring) {
