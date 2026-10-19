@@ -159,12 +159,23 @@ check(
   "Production scripts must persist preferences only through chrome.storage.local.",
 );
 
+const allowedStoredKeys = [
+  "gmailReaderPreviewDevicePreset",
+  "gmailReaderPreviewFloating",
+  "gmailReaderPreviewFloatingScale",
+  "gmailReaderPreviewLocale",
+  "gmailReaderPreviewScale",
+];
 const storedKeys = [
-  ...content.matchAll(/gmailReaderPreview(?:Locale|DevicePreset|Scale)/g),
-].map((match) => match[0]);
+  ...new Set(
+    [...content.matchAll(/['"`](gmailReaderPreview\w+)['"`]/g)].map(
+      (match) => match[1],
+    ),
+  ),
+].sort();
 check(
-  new Set(storedKeys).size === 3,
-  "Only locale, device preset, and preview scale may be persisted.",
+  JSON.stringify(storedKeys) === JSON.stringify(allowedStoredKeys),
+  `Only locale, device preset, preview scale, Floating preview choice, and Floating zoom may be persisted; found ${storedKeys.join(", ")}.`,
 );
 
 if (failures.length) {

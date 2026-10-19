@@ -17,6 +17,8 @@
     locale: 'gmailReaderPreviewLocale',
     devicePreset: 'gmailReaderPreviewDevicePreset',
     previewScale: 'gmailReaderPreviewScale',
+    floatingPreferred: 'gmailReaderPreviewFloating',
+    floatingScale: 'gmailReaderPreviewFloatingScale',
   };
   const DEVICE_PRESETS = {
     iphone16: {
@@ -92,6 +94,7 @@
     previewScale: 80,
     previewScalePreset: 'custom',
     floating: false,
+    floatingPreferred: false,
     floatingScale: 40,
     floatingPosition: null,
     fullPanelOverride: false,
@@ -1203,10 +1206,10 @@
       .forEach((button) => button.addEventListener('click', closePreview));
     root
       .querySelector('[data-floating-enter]')
-      ?.addEventListener('click', () => setFloatingMode(root, true));
+      ?.addEventListener('click', () => chooseFloatingMode(root, true));
     root
       .querySelector('[data-floating-exit]')
-      ?.addEventListener('click', () => setFloatingMode(root, false));
+      ?.addEventListener('click', () => chooseFloatingMode(root, false));
     root
       .querySelectorAll('[data-device]')
       .forEach((button) =>
@@ -1480,7 +1483,8 @@
     closePreview(false);
     activeEditor = editor;
     activeCompose = findComposeRoot(editor);
-    viewState.floating = composeRequiresFloating(activeCompose);
+    viewState.floating =
+      viewState.floatingPreferred || composeRequiresFloating(activeCompose);
     const root = document.createElement('div');
     root.id = ROOT_ID;
     root.lang = currentLocale;
@@ -1723,6 +1727,12 @@
     updateFloatingExitControl(root);
   }
 
+  function chooseFloatingMode(root, enabled) {
+    viewState.floatingPreferred = enabled;
+    storageSet({ [STORAGE_KEYS.floatingPreferred]: enabled }).catch(() => {});
+    setFloatingMode(root, enabled);
+  }
+
   function setFloatingScale(root, requestedScale, commit = false) {
     const scale = Math.min(
       100,
@@ -1734,6 +1744,8 @@
     const output = root.querySelector('[data-floating-scale-output]');
     if (range) range.value = String(scale);
     if (output) output.textContent = `${scale}%`;
+    if (commit)
+      storageSet({ [STORAGE_KEYS.floatingScale]: scale }).catch(() => {});
     if (scaleFrame !== null) cancelAnimationFrame(scaleFrame);
     scaleFrame = requestAnimationFrame(() => {
       scaleFrame = null;
@@ -2107,6 +2119,10 @@
     const storedScale = Number(stored[STORAGE_KEYS.previewScale]);
     if (storedScale >= 10 && storedScale <= 100)
       viewState.previewScale = Math.round(storedScale);
+    viewState.floatingPreferred = stored[STORAGE_KEYS.floatingPreferred] === true;
+    const storedFloatingScale = Number(stored[STORAGE_KEYS.floatingScale]);
+    if (storedFloatingScale >= 20 && storedFloatingScale <= 100)
+      viewState.floatingScale = Math.round(storedFloatingScale);
     scanForEditors();
     observer.observe(document.documentElement, {
       attributes: true,

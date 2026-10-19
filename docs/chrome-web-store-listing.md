@@ -1,6 +1,6 @@
 # Chrome Web Store Submission Copy
 
-**Candidate:** 0.8.4
+**Candidate:** 0.9.0
 
 **Primary language:** English
 
@@ -37,12 +37,12 @@ Key features:
 - Mobile and desktop reference views
 - iPhone, Pixel, and Samsung Galaxy reference viewports
 - Light and approximate Dark Mode
-- Adjustable preview size and draggable Floating preview
+- Adjustable preview size and draggable Floating preview that remembers your last layout and zoom
 - Local formatting checks with warning highlighting and per-draft controls
 - English and Traditional Chinese interface
 - No account, backend, analytics, telemetry, advertising, or external AI API
 
-Privacy is part of the product design. Draft content is processed locally in the active Gmail tab and is not uploaded or stored by the extension. Network-backed images are replaced with a local placeholder inside Preview. Only interface language, reference device, and preview size are stored in Chrome local extension storage.
+Privacy is part of the product design. Draft content is processed locally in the active Gmail tab and is not uploaded or stored by the extension. Network-backed images are replaced with a local placeholder inside Preview. Only interface language, reference device, preview size, Floating preview choice, and Floating preview zoom are stored in Chrome local extension storage.
 
 This is an approximate pre-send inspection tool, not a native Gmail App emulator. Rendering can still vary by email client, version, device, display settings, accessibility preferences, and server-side transformations.
 
@@ -72,12 +72,12 @@ Gmail Recipient Preview 會在 Gmail 撰寫視窗中加入「預覽」按鈕，�
 - 提供行動裝置與電腦版閱讀畫面
 - 可切換 iPhone、Pixel 與 Samsung Galaxy 參考寬度
 - 支援淺色與近似深色模式
-- 可調整預覽比例，或改用可拖曳的浮動視窗
+- 可調整預覽比例，或改用可拖曳的浮動視窗，並記住上次的版面與比例
 - 在本機檢查格式問題，並標示可能需要注意的位置
 - 介面支援英文與繁體中文
 - 不需帳號，也沒有後端、分析追蹤、廣告或外部 AI API
 
-草稿內容只會在目前的 Gmail 分頁中處理，不會由這項擴充功能上傳或儲存。工具只會在 Chrome 的本機擴充功能儲存空間中保存介面語言、參考裝置與預覽比例。
+草稿內容只會在目前的 Gmail 分頁中處理，不會由這項擴充功能上傳或儲存。工具只會在 Chrome 的本機擴充功能儲存空間中保存介面語言、參考裝置、預覽比例、是否使用浮動預覽，以及浮動預覽比例。
 
 這是一項寄出前的近似預覽工具，並非 Gmail App 模擬器。實際畫面仍可能因郵件 App、版本、裝置、顯示設定、輔助使用偏好或伺服器端處理而有所不同。
 
@@ -100,7 +100,7 @@ Allow a user to preview the currently open Gmail draft across common recipient r
 
 ### `storage` permission justification
 
-Stores only three local interface preferences: selected language, selected reference device, and selected preview size. It does not store email subjects, recipients, bodies, images, attachments, or warning results.
+Stores only five local interface preferences: selected language, selected reference device, selected preview size, whether Floating preview was last chosen, and selected Floating preview zoom. It does not store email subjects, recipients, bodies, images, attachments, or warning results.
 
 ### Host permission justification
 
@@ -114,7 +114,7 @@ No. All JavaScript and CSS are included in the extension package. The extension 
 
 The extension locally handles website content, user-generated content, and personal communications contained in the Gmail draft the user actively previews. It does not transmit this content off the user's device, store it after the preview closes, sell it, use it for advertising, or make it available for human review.
 
-The extension stores only interface language, reference device, and preview size in `chrome.storage.local`.
+The extension stores only interface language, reference device, preview size, Floating preview choice, and Floating preview zoom in `chrome.storage.local`.
 
 ### Required certifications
 

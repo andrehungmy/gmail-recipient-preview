@@ -69,7 +69,7 @@ Runtime state is intentionally small and in-memory:
 - selected mobile/desktop view, Light/approximate Dark Mode, reference viewport, scale, and floating layout;
 - current locale.
 
-Only locale, device preset, and preview scale are persisted in `chrome.storage.local`. Draft data and audit results are never written to extension or page storage.
+Only locale, device preset, preview scale, Floating preview choice (set only by an explicit user click, not by automatic Floating for large Compose windows), and Floating preview zoom are persisted in `chrome.storage.local`. Draft data and audit results are never written to extension or page storage.
 
 ## Layout behavior
 

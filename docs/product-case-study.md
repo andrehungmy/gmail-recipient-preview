@@ -54,7 +54,7 @@ Automated tests use a Gmail-like harness and block external requests. This cover
 
 ## Privacy model
 
-The content script reads only the selected Compose subject/body needed for Preview. Draft HTML and audit results live in memory and are discarded when the panel closes or the page unloads. Only three interface preferences are persisted in `chrome.storage.local`. No content-script fallback writes to Gmail page storage.
+The content script reads only the selected Compose subject/body needed for Preview. Draft HTML and audit results live in memory and are discarded when the panel closes or the page unloads. Only five interface preferences are persisted in `chrome.storage.local`. No content-script fallback writes to Gmail page storage.
 
 ## Technical architecture
 

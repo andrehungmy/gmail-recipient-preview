@@ -2,21 +2,21 @@
 
 Use this checklist for a specific candidate version. Record evidence and do not mark an item complete based on an earlier archive or working tree.
 
-**Candidate:** 0.8.4
+**Candidate:** 0.9.0
 
-**Automated verification date:** July 29, 2026
+**Automated verification date:** October 19, 2026
 
-**Artifact:** `dist/gmail-recipient-preview-v0.8.4.zip`
+**Artifact:** `dist/gmail-recipient-preview-v0.9.0.zip`
 
-**SHA-256:** `284cea1ae271956a689bde97ad8c4031d3a55e3e02b533bc43743f52d082f101`
+**SHA-256:** `cbcc50d89740de37f727d4e46ee35539cc64384b8fb17c1459e7d8c98081b7cf`
 **Automated browser environment:** Google Chrome 150.0.7871.187 on macOS 26.5.2
 
-Version 0.8.4 changes localization metadata only. The 0.8.3 live Gmail smoke evidence remains the latest behavior-changing manual run; automated browser, security, packaging, localization, and asset validation are rerun for 0.8.4.
+Version 0.9.0 includes the unsubmitted 0.8.4 localization metadata and a behavior change: Preview remembers the user's last Floating preview choice and Floating zoom ([#4](https://github.com/andrehungmy/gmail-recipient-preview/issues/4)). The 0.8.3 live Gmail smoke evidence predates this change, so a new live smoke test including `LIVE-015` is required before submission.
 
 ## Candidate identity
 
 - [x] `manifest.json` and `package.json` versions match.
-- [x] The intended release branch is identified: `codex/v0.8.4-localization`.
+- [x] The intended release branch is identified: `codex/v0.9.0-remember-floating`.
 - [x] Release notes describe only verified changes.
 - [x] No unrelated or unreviewed local changes are included.
 
@@ -33,7 +33,7 @@ Version 0.8.4 changes localization metadata only. The 0.8.3 live Gmail smoke evi
 
 - [x] Permissions remain exactly `storage` plus `https://mail.google.com/*` host access, unless a documented release decision says otherwise.
 - [ ] DevTools Network shows no extension-originated backend, analytics, telemetry, AI, logging, or network-image request.
-- [x] `chrome.storage.local` contains only locale, device preset, and preview scale.
+- [x] `chrome.storage.local` contains only locale, device preset, preview scale, Floating preview choice, and Floating preview zoom.
 - [x] Gmail `localStorage` contains no keys written by the content script.
 - [x] Remote images render local placeholders; the disclosure explains Gmail may load source images independently.
 - [x] Privacy policy, store disclosure, and implemented behavior agree.
@@ -83,6 +83,7 @@ Version 0.8.4 changes localization metadata only. The 0.8.3 live Gmail smoke evi
 - [x] The ZIP contains all `landing.html` image references.
 - [x] The ZIP excludes tests, QA fixtures, raw/final store working assets, internal docs, logs, environment files, source maps, and development dependencies.
 - [ ] Load the unpacked ZIP contents in a clean Chrome profile and repeat smoke tests.
+- [x] `LIVE-015` remembered Floating preview passes in real Gmail (maintainer, October 19, 2026).
 - [x] Record archive name, size, and checksum.
 
 ## Documentation and open source
@@ -109,6 +110,13 @@ Version 0.8.4 changes localization metadata only. The 0.8.3 live Gmail smoke evi
 - [ ] `TEST_CASES.md` P0, LIVE, SAF, IMG, WEB, localization, and lifecycle cases pass.
 - [ ] Native comparison evidence follows `DEVICE_RESEARCH_AND_VALIDATION.md`.
 - [ ] Any skipped test states the reason, resulting uncertainty, and later verification method.
+
+### Live Gmail smoke test — October 19, 2026 (v0.9.0)
+
+- Test owner: maintainer, in real Gmail with the v0.9.0 unpacked release build.
+- Passed (maintainer report): `LIVE-015` remembered Floating preview and Floating zoom.
+- Passed (maintainer report): basic Preview flow — open Preview from Compose, draft synchronization, and close.
+- Not recorded for this run: exact Chrome/OS versions, Gmail locale, clean-profile loading, and the full `TEST_CASES.md` matrix; the related checkboxes above remain unchecked.
 
 ### Live Gmail smoke test — July 28, 2026
 

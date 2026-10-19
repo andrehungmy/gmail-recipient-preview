@@ -106,7 +106,7 @@ Before Chrome Web Store submission:
 
 - Run all P0, SAF, LIVE, IMG, WEB, and native-comparison tests in `TEST_CASES.md`.
 - Inspect DevTools Network while opening, editing, and closing Preview; confirm no extension-originated backend, analytics, or network-image request.
-- Inspect Chrome extension storage and `mail.google.com` local storage; confirm the three preferences exist only in extension storage and no draft data is persisted.
+- Inspect Chrome extension storage and `mail.google.com` local storage; confirm the five preferences exist only in extension storage and no draft data is persisted.
 - Test the active-content sanitizer fixture and verify that no markup escapes `.grp-email-body`.
 - Test a real Gmail draft containing an inline image, link, table, signature, quoted thread, and long copy.
 - Reload the extension while Gmail remains open, verify graceful fallback, then refresh Gmail and retest.

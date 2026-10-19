@@ -4,7 +4,7 @@
 
 Gmail Recipient Preview reads the subject and body of the Gmail draft the user chooses to preview. Processing happens locally in that Gmail tab. The extension does not send draft content to a server, AI API, analytics provider, logging service, or maintainer.
 
-The extension stores three interface preferences in Chrome's local extension storage: language, reference-device preset, and preview scale. It does not store email bodies, subjects, recipients, images, attachments, or warning results.
+The extension stores five interface preferences in Chrome's local extension storage: language, reference-device preset, preview scale, Floating preview choice, and Floating preview zoom. It does not store email bodies, subjects, recipients, images, attachments, or warning results.
 
 ## Data accessed
 
