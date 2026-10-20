@@ -80,6 +80,7 @@ Version 0.9.0 includes the unsubmitted 0.8.4 localization metadata and a behavio
 
 - [x] `npm run package` succeeds.
 - [x] `npm run package:inspect` reports only allowlisted runtime files.
+- [ ] Rebuilding from a fresh checkout of the candidate commit reproduces the same SHA-256 (see `docs/testing.md`). Applies from the first release after reproducible packaging landed; v0.9.0 predates it.
 - [x] The ZIP contains all `landing.html` image references.
 - [x] The ZIP excludes tests, QA fixtures, raw/final store working assets, internal docs, logs, environment files, source maps, and development dependencies.
 - [ ] Load the unpacked ZIP contents in a clean Chrome profile and repeat smoke tests.

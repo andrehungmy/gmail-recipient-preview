@@ -25,6 +25,8 @@ npm run release:preflight:local
 
 `npm run build` validates the source-shipped extension; it does not bundle or transpile code.
 
+`npm run package` is reproducible: it stages the allowlisted files with a fixed mtime (1980-01-01 UTC, or `SOURCE_DATE_EPOCH` when set) and mode `0644`, sorts the entries, and zips them with `TZ=UTC`. Any fresh checkout of the same commit therefore produces a byte-identical ZIP with the same SHA-256, so a release can be rebuilt from its tagged commit and verified against the published checksum.
+
 Use `npm run release:preflight` after committing the intended candidate. It checks version identity, release notes, checklist candidate, artifact checksum, and Git cleanliness. Use `npm run release:preflight:final` only after every manual checkbox is complete. None of these commands uploads or submits to Chrome Web Store.
 
 ## Browser test coverage
